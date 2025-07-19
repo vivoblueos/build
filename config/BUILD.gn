@@ -1,0 +1,104 @@
+# Copyright (c) 2025 vivo Mobile Communication Co., Ltd.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#       http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+_common_cflags = [
+  "-ffunction-sections",
+  "-fdata-sections",
+]
+
+_common_rustflags = [ "--color=always" ]
+
+if (board != "none" && (build_type == "coverage" || build_type == "profile")) {
+  _common_rustflags += [ "-Zno-profiler-runtime" ]
+}
+
+config("release") {
+  cflags = [
+             "-Oz",
+             "-fdiagnostics-color=always",
+
+             # There are still a lot of unsafe codes in C or Rust,
+             # so switch off strict aliasing currently to avoid subtle bugs.
+             "-fno-strict-aliasing",
+           ] + _common_cflags
+  cflags_c = [ "-std=c11" ]
+  rustflags = [
+                "-Copt-level=z",
+                "-Cstrip=debuginfo",
+                "--cfg",
+                "release",
+              ] + _common_rustflags
+}
+
+config("debug") {
+  cflags = [
+             "-O1",
+             "-g",
+             "-gdwarf-4",
+             "-fno-omit-frame-pointer",
+             "-fdiagnostics-color=always",
+           ] + _common_cflags
+  cflags_c = [ "-std=c11" ]
+  rustflags = [
+                "-Copt-level=1",
+                "-Cforce-frame-pointers=yes",
+                "-Cdebug_assertions",
+                "--cfg",
+                "debug",
+              ] + _common_rustflags
+  if (board == "qemu_mps3_an547") {
+    rustflags += [ "-Cdebuginfo=limited" ]
+  } else {
+    rustflags += [ "-Cdebuginfo=full" ]
+  }
+}
+
+config("coverage") {
+  cflags = [
+             "-O1",
+             "-g",
+             "-gdwarf-4",
+             "-fno-omit-frame-pointer",
+             "-fdiagnostics-color=always",
+             "-fshort-enums",
+           ] + _common_cflags
+  cflags_c = [ "-std=c11" ]
+  rustflags = [
+                "-Copt-level=1",
+                "-Cdebuginfo=full",
+                "-Cforce-frame-pointers=yes",
+                "-Cinstrument-coverage",
+                "--cfg",
+                "coverage",
+                "--cfg",
+                "debug",
+              ] + _common_rustflags
+}
+
+config("profile") {
+  cflags = [
+             "-O1",
+             "-g",
+             "-gdwarf-4",
+             "-fno-omit-frame-pointer",
+             "-fdiagnostics-color=always",
+           ] + _common_cflags
+  cflags_c = [ "-std=c11" ]
+  rustflags = [
+                "-Copt-level=1",
+                "-Cdebuginfo=full",
+                "-Cforce-frame-pointers=yes",
+                "-Cprofile-generate",
+              ] + _common_rustflags
+}

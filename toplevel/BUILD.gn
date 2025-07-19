@@ -1,0 +1,116 @@
+# Copyright (c) 2025 vivo Mobile Communication Co., Ltd.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#       http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+import("//build/toolchain/blueos.gni")
+
+if (board != "none") {
+  group("default") {
+    deps = []
+  }
+
+  group("check_all") {
+    testonly = true
+    deps = [
+      ":check_kernel",
+      ":check_librs",
+      ":check_loader",
+      ":check_rsrt",
+      ":check_shell",
+    ]
+  }
+
+  group("check_shell") {
+    testonly = true
+    deps = [ "//apps/shell:shell($libc_toolchain)" ]
+  }
+
+  group("check_rsrt") {
+    testonly = true
+    deps = [ "kernel/rsrt:check_rsrt($libc_toolchain)" ]
+  }
+
+  group("check_kernel") {
+    testonly = true
+    deps = [ "//kernel/kernel:check_kernel($kernel_toolchain)" ]
+  }
+
+  group("check_librs") {
+    testonly = true
+    deps = [ "//librs:check_librs($libc_toolchain)" ]
+  }
+
+  # only tested librs+qemu-user on arm cortex-m now
+  if (board == "qemu_mps3_an547" || board == "qemu_mps2_an385") {
+    group("check_librs_linux_emulation") {
+      testonly = true
+      deps = [
+        "//librs:check_librs_linux_emulation($librs_linux_emulation_toolchain)",
+      ]
+    }
+  }
+  group("check_loader") {
+    testonly = true
+    deps = [ "//kernel/loader:check_loader($libc_toolchain)" ]
+  }
+
+  group("check_apps") {
+    testonly = true
+    deps = [ "//apps/example:check_apps($libc_toolchain)" ]
+  }
+} else {
+  # bsp == "none" indicates host-only targets.
+  group("default") {
+  }
+
+  group("check_all") {
+    testonly = true
+    deps = [
+      ":check_infra",
+      "//build/tests:tests($host_toolchain)",
+    ]
+  }
+
+  group("check_infra") {
+    testonly = true
+    deps = [ "//kernel/infra:check_infra($host_toolchain)" ]
+  }
+}
+
+if (coverage) {
+  group("check_coverage") {
+    testonly = true
+    deps = [ ":merge_coverage_report" ]
+  }
+  action("merge_coverage_report") {
+    testonly = true
+
+    # FIXME: check_loader is unstable with coverage profile.
+    deps = [
+      ":check_kernel",
+      ":check_librs",
+      ":check_rsrt",
+    ]
+    script = "//build/scripts/merge_cov_report.py"
+    out_dir = root_out_dir
+    args = [
+      "-b",
+      rebase_path(out_dir + "/bin"),
+      "-d",
+      rebase_path(out_dir + "/test"),
+      "-o",
+      rebase_path(out_dir + "/cov_report"),
+    ]
+    outputs = [ "$target_gen_dir/$target_name/dummy" ]
+  }
+}

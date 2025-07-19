@@ -1,0 +1,55 @@
+# Copyright (c) 2025 vivo Mobile Communication Co., Ltd.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#       http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+common_rustc_link_args = [ "-Clink-arg=-Wl,--gc-sections" ]
+
+thumbv7m_rustc_link_args = [
+  "-C",
+  "link-arg=-mcpu=cortex-m3",
+  "-C",
+  "link-arg=-mthumb",
+  "-Clinker=arm-none-eabi-gcc",
+]
+
+thumbv8m_rustc_link_args = [
+  "-Clink-arg=-march=armv8.1-m.main+mve.fp+fp.dp",
+  "-Clink-arg=-mcpu=cortex-m55",
+  "-Clink-arg=-mthumb",
+  "-Clink-arg=-mfpu=fpv5-d16",
+  "-Clink-arg=-mfloat-abi=hard",
+  "-Clinker=arm-none-eabi-gcc",
+]
+
+aarch64_rustc_link_args = [
+  "-Clink-arg=-march=armv8-a",
+  "-Clink-arg=-mtune=cortex-a53",
+  "-Clinker=aarch64-none-elf-gcc",
+]
+
+riscv64_rustc_link_args = [
+  "-Clinker=clang",
+  "-Clink-arg=-fuse-ld=lld",
+  "-Clink-arg=--target=riscv64",
+  "-Clink-arg=-march=rv64",
+  "-Clink-arg=-mabi=lp64",
+  "-Clink-arg=-Wl,-z,norelro",
+]
+# link args for gcc
+#riscv64_rustc_link_args = [
+#  "-Clinker=riscv64-unknown-elf-gcc",
+#  "-Clink-arg=-march=rv64gc",
+#  "-Clink-arg=-mabi=lp64d",
+#  "-Clink-arg=-Wl,--gc-sections",
+#  "-Clink-arg=-nostdlib",
+#]

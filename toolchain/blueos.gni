@@ -1,0 +1,386 @@
+# Copyright (c) 2025 vivo Mobile Communication Co., Ltd.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#       http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+import("//build/config/rust_config.gni")
+
+# This is strongly depending on where generated files are put by tool("link"),
+# so we offer this action in the same file as blueos_toolchain.
+template("postlink_action") {
+  # exe is a label pointing to a executable target.
+  assert(defined(invoker.exe))
+  action(target_name) {
+    forward_variables_from(invoker,
+                           [
+                             "testonly",
+                             "script",
+                             "outputs",
+                           ])
+    exe_path = get_label_info(invoker.exe, "root_out_dir") + "/bin/" +
+               get_label_info(invoker.exe, "name")
+    args = [ rebase_path(exe_path) ]
+    if (defined(invoker.args)) {
+      args += invoker.args
+    }
+    deps = [ invoker.exe ]
+    if (defined(invoker.deps)) {
+      deps += invoker.deps
+    }
+    inputs = [ exe_path ]
+  }
+}
+
+template("gen_qemu_runner") {
+  forward_variables_from(invoker, "*", [ "args" ])
+  assert(defined(img))
+  assert(defined(qemu))
+  assert(defined(machine))
+  if (!defined(deps)) {
+    deps = [ img ]
+  } else {
+    deps += [ img ]
+  }
+  img_path = get_label_info(img, "root_out_dir") + "/bin/" +
+             get_label_info(img, "name")
+  out_dir = get_label_info(img, "root_out_dir") + "/bin"
+  outputs = [
+    out_dir + "/" + "${target_name}-qemu-dbg.sh",
+    out_dir + "/" + "${target_name}-qemu-test.sh",
+    out_dir + "/" + "${target_name}-qemu.sh",
+  ]
+  if (defined(semihosting)) {
+    semihosting = semihosting || coverage || profile
+  } else {
+    semihosting = coverage || profile
+  }
+  action(target_name) {
+    script = "//build/scripts/gen_qemu_runner.py"
+    args = [
+      "--qemu",
+      qemu,
+      "--machine",
+      machine,
+      "--out_dir",
+      rebase_path(out_dir),
+      "--name",
+      target_name,
+      rebase_path(img_path),
+    ]
+
+    if (semihosting == true) {
+      args += [ "--semihosting" ]
+    }
+    if (defined(qemu_args) && qemu_args != []) {
+      args += [
+        "--qemu_args",
+        string_join(" ", qemu_args),
+      ]
+    }
+    if (defined(block_img)) {
+      args += [
+        "--block_img",
+        block_img,
+      ]
+    }
+    if (defined(block_args) && block_args != []) {
+      args += [
+        "--block_args",
+        string_join(" ", block_args),
+      ]
+    }
+    if (defined(block_size)) {
+      args += [
+        "--block_size",
+        block_size,
+      ]
+    }
+    if (defined(net_args) && net_args != []) {
+      args += [
+        "--net_args",
+        string_join(" ", net_args),
+      ]
+    }
+  }
+}
+
+template("gen_linux_emulation_runner") {
+  forward_variables_from(invoker, "*", [ "args" ])
+  assert(defined(img))
+  assert(defined(qemu))
+  assert(defined(cpu))
+  if (!defined(deps)) {
+    deps = [ img ]
+  } else {
+    deps += [ img ]
+  }
+  img_path = get_label_info(img, "root_out_dir") + "/bin/" +
+             get_label_info(img, "name")
+  out_dir = get_label_info(img, "root_out_dir") + "/bin"
+  outputs = [
+    out_dir + "/" + "${target_name}-qemu-dbg.sh",
+    out_dir + "/" + "${target_name}-qemu-test.sh",
+    out_dir + "/" + "${target_name}-qemu.sh",
+  ]
+
+  action(target_name) {
+    script = "//build/scripts/gen_linux_emulation_runner.py"
+    args = [
+      "--qemu",
+      qemu,
+      "--cpu",
+      cpu,
+      "--out_dir",
+      rebase_path(out_dir),
+      "--name",
+      target_name,
+      rebase_path(img_path),
+    ]
+  }
+}
+
+template("run_qemu_check") {
+  forward_variables_from(invoker, "*", [ "args" ])
+  assert(defined(runner))
+  assert(defined(checker))
+  if (!defined(deps)) {
+    deps = [ runner ]
+  } else {
+    deps += [ runner ]
+  }
+  if (!defined(inputs)) {
+    inputs = [ checker ]
+  } else {
+    inputs += [ checker ]
+  }
+
+  outs = get_target_outputs(runner)
+  filtered = filter_include(outs, [ "*-qemu.sh" ])
+  runner_path = rebase_path(filtered[0])
+  test_dir = get_label_info(runner, "root_out_dir") + "/test/" + target_name
+  qemu_action_name = target_name
+  if (coverage) {
+    qemu_action_name = "action" + target_name
+  }
+  action(qemu_action_name) {
+    script = "//build/scripts/qemu_checker/qemu_checker.py"
+    args = [
+      "-s",
+      runner_path,
+      "-t",
+      rebase_path(test_dir),
+      rebase_path(checker),
+    ]
+
+    # We always re-run the check.
+    outputs = [ "$target_gen_dir/$qemu_action_name/dummy" ]
+  }
+
+  if (coverage) {
+    img_path = get_label_info(img, "root_out_dir") + "/bin/" +
+               get_label_info(img, "name")
+    action(target_name) {
+      script = "//build/scripts/gen_cov_report.py"
+      args = [
+        "-t",
+        rebase_path(test_dir),
+        "-b",
+        rebase_path(img_path),
+      ]
+      deps += [ ":${qemu_action_name}" ]
+      outputs = [ "$target_gen_dir/$target_name/dummy" ]
+    }
+  }
+}
+
+template("run_host") {
+  forward_variables_from(invoker, "*", [ "args" ])
+  assert(defined(runner))
+  if (!defined(deps)) {
+    deps = [ runner ]
+  } else {
+    deps += [ runner ]
+  }
+  runner_path = get_label_info(runner, "root_out_dir") + "/bin/" +
+                get_label_info(runner, "name")
+  test_path = get_label_info(runner, "root_out_dir") + "/test/"
+  action(target_name) {
+    script = "//build/scripts/run_cmd.py"
+    args = [
+      "-b",
+      rebase_path(runner_path),
+      "-t",
+      rebase_path(test_path),
+    ]
+
+    # We always re-run the check.
+    outputs = [ "$target_gen_dir/$target_name/dummy" ]
+  }
+}
+
+template("blueos_toolchain") {
+  toolchain(target_name) {
+    # https://groups.google.com/a/chromium.org/g/gn-dev/c/F_lv5T-tNDM
+    forward_variables_from(invoker.toolchain_args, "*")
+    not_needed("*")
+    forward_variables_from(invoker, "*")
+
+    link_map_opt = "-Wl,-Map="
+    if (current_os == "mac") {
+      link_map_opt = "-Wl,-map,"
+    }
+    tool("rust_bin") {
+      depfile = "{{target_out_dir}}/{{crate_name}}.d"
+      mapfile = "{{target_out_dir}}/{{crate_name}}.map"
+      imgfile = "{{output_dir}}/{{crate_name}}.img"
+      outfile = "{{output_dir}}/{{crate_name}}"
+      objcopy_command = "&& $objcopy -O binary $outfile $imgfile"
+      command = "{{rustenv}} $clippy_driver --crate-name {{crate_name}} --crate-type {{crate_type}} --emit=dep-info=$depfile,link {{rustflags}} $rustc_lint_flags $clippy_lint_flags ${rustc_link_args} -o $outfile {{source}} {{externs}} {{rustdeps}} -Clink-arg=${link_map_opt}${mapfile} ${objcopy_command}"
+      command += " && {{rustenv}} $rustc --crate-name {{crate_name}} --crate-type {{crate_type}} --emit=dep-info=$depfile,link {{rustflags}} $rustc_lint_flags ${rustc_link_args} -o $outfile {{source}} {{externs}} {{rustdeps}} -Clink-arg=${link_map_opt}${mapfile} ${objcopy_command}"
+      description = "RUST $outfile"
+      outputs = [
+        outfile,
+        mapfile,
+        imgfile,
+      ]
+      default_output_dir = "{{root_out_dir}}/bin"
+    }
+
+    tool("rust_staticlib") {
+      depfile = "{{target_out_dir}}/{{target_output_name}}/{{crate_name}}.d"
+      outfile = "{{target_out_dir}}/{{target_output_name}}/lib{{crate_name}}.a"
+      command = "{{rustenv}} $clippy_driver --crate-name {{crate_name}} {{source}} --crate-type {{crate_type}} --emit=dep-info=$depfile,link {{rustflags}} $rustc_lint_flags $clippy_lint_flags -o $outfile {{rustdeps}} {{externs}}"
+      command += " && {{rustenv}} $rustc --crate-name {{crate_name}} {{source}} --crate-type {{crate_type}} --emit=dep-info=$depfile,link {{rustflags}} $rustc_lint_flags -o $outfile {{rustdeps}} {{externs}}"
+      description = "RUST $outfile"
+      outputs = [ outfile ]
+      default_output_dir = "{{root_out_dir}}/lib"
+    }
+
+    tool("rust_rlib") {
+      depfile = "{{target_out_dir}}/{{target_output_name}}/{{crate_name}}.d"
+      outfile =
+          "{{target_out_dir}}/{{target_output_name}}/lib{{crate_name}}.rlib"
+      command = "{{rustenv}} $clippy_driver --crate-name {{crate_name}} {{source}} --crate-type {{crate_type}} --emit=dep-info=$depfile,link {{rustflags}} $rustc_lint_flags $clippy_lint_flags -o $outfile.clippy {{rustdeps}} {{externs}}"
+      command += " && {{rustenv}} $rustc --crate-name {{crate_name}} {{source}} --crate-type {{crate_type}} --emit=dep-info=$depfile,link {{rustflags}} $rustc_lint_flags -o $outfile {{rustdeps}} {{externs}}"
+      description = "RUST $outfile"
+      outputs = [ outfile ]
+    }
+
+    tool("rust_macro") {
+      if (current_os == "ios" || current_os == "mac") {
+        default_output_extension = ".dylib"
+      } else {
+        default_output_extension = ".so"
+      }
+      depfile = "{{target_out_dir}}/{{crate_name}}.d"
+      outfile = "{{target_out_dir}}/lib{{crate_name}}{{output_extension}}"
+      command = "{{rustenv}} $clippy_driver --crate-name {{crate_name}} {{source}} --crate-type {{crate_type}} --emit=dep-info=$depfile,link {{rustflags}} $rustc_lint_flags $clippy_lint_flags ${rustc_link_args} -o $outfile {{rustdeps}} {{externs}}"
+      command += " && {{rustenv}} $rustc --crate-name {{crate_name}} {{source}} --crate-type {{crate_type}} --emit=dep-info=$depfile,link {{rustflags}} $rustc_lint_flags ${rustc_link_args} -o $outfile {{rustdeps}} {{externs}}"
+      description = "RUST $outfile"
+      outputs = [ outfile ]
+    }
+
+    tool("rust_cdylib") {
+      if (current_os == "ios" || current_os == "mac") {
+        default_output_extension = ".dylib"
+      } else {
+        default_output_extension = ".so"
+      }
+      depfile = "{{target_out_dir}}/{{crate_name}}.d"
+      outfile = "{{output_dir}}/lib{{crate_name}}{{output_extension}}"
+      command = "{{rustenv}} $clippy_driver --crate-name {{crate_name}} {{source}} --crate-type {{crate_type}} --emit=dep-info=$depfile,link {{rustflags}} $rustc_lint_flags $clippy_lint_flags ${rustc_link_args} -o $outfile {{rustdeps}} {{externs}}"
+      command += " && {{rustenv}} $rustc --crate-name {{crate_name}} {{source}} --crate-type {{crate_type}} --emit=dep-info=$depfile,link {{rustflags}} $rustc_lint_flags ${rustc_link_args} -o $outfile {{rustdeps}} {{externs}}"
+      description = "RUST $outfile"
+      outputs = [ outfile ]
+      default_output_dir = "{{root_out_dir}}/lib"
+    }
+
+    tool("asm") {
+      depfile = "{{output}}.d"
+      command = "$cc -MMD -MF $depfile {{defines}} {{include_dirs}} {{cflags}} {{cflags_c}} -c {{source}} -o {{output}}"
+      depsformat = "gcc"
+      description = "ASM {{output}}"
+      outputs =
+          [ "{{source_out_dir}}/{{target_output_name}}.{{source_name_part}}.o" ]
+    }
+
+    tool("cc") {
+      depfile = "{{output}}.d"
+      command = "$cc -MMD -MF $depfile {{defines}} {{include_dirs}} {{cflags}} {{cflags_c}} -c {{source}} -o {{output}}"
+      depsformat = "gcc"
+      description = "CC {{output}}"
+      outputs =
+          [ "{{source_out_dir}}/{{target_output_name}}.{{source_name_part}}.o" ]
+    }
+
+    tool("cxx") {
+      depfile = "{{output}}.d"
+      command = "$cxx -MMD -MF $depfile {{defines}} {{include_dirs}} {{cflags}} {{cflags_cc}} -c {{source}} -o {{output}}"
+      depsformat = "gcc"
+      description = "CXX {{output}}"
+      outputs =
+          [ "{{source_out_dir}}/{{target_output_name}}.{{source_name_part}}.o" ]
+    }
+
+    tool("alink") {
+      command = "rm -f {{output}} && $ar rcsD {{arflags}} {{output}} {{inputs}}"
+      description = "AR {{output}}"
+      outputs = [ "{{output_dir}}/{{target_output_name}}.a" ]
+      output_prefix = "lib"
+      default_output_dir = "{{root_out_dir}}/lib"
+    }
+
+    tool("solink") {
+      outfile = "{{output_dir}}/{{target_output_name}}{{output_extension}}"
+      if (current_os == "ios" || current_os == "mac") {
+        default_output_extension = ".dylib"
+        command = "$ld -shared {{ldflags}} -o $outfile {{inputs}} {{libs}}"
+      } else {
+        default_output_extension = ".so"
+        command = "$ld -shared {{ldflags}} -Wl,-soname,{{target_output_name}}{{output_extension}} -o $outfile {{inputs}} {{libs}}"
+      }
+      description = "SOLINK $outfile"
+      outputs = [ outfile ]
+      output_prefix = "lib"
+      default_output_dir = "{{root_out_dir}}/lib"
+    }
+
+    tool("link") {
+      out_bin = "{{output_dir}}/{{target_output_name}}"
+      out_img = "{{output_dir}}/{{target_output_name}}.img"
+      out_map = "{{output_dir}}/{{target_output_name}}.map"
+      description = "LINK $out_bin"
+      outputs = [
+        out_bin,
+        out_img,
+        out_map,
+      ]
+      objcopy_command = "&& $objcopy -O binary $out_bin $out_img"
+      if (current_os == "ios" || current_os == "mac") {
+        command = "$ld ${link_map_opt}${out_map} {{ldflags}} {{inputs}} {{rlibs}} {{libs}} -o $out_bin ${objcopy_command}"
+      } else {
+        command = "$ld ${link_map_opt}${out_map} {{ldflags}} -Wl,--start-group {{inputs}} {{rlibs}} -Wl,--end-group {{libs}} -o $out_bin ${objcopy_command}"
+      }
+      default_output_dir = "{{root_out_dir}}/bin"
+    }
+
+    tool("stamp") {
+      command = "touch {{output}}"
+      description = "STAMP {{output}}"
+    }
+
+    tool("copy") {
+      command = "cp -af {{source}} {{output}}"
+      description = "COPY {{source}} {{output}}"
+    }
+  }
+}

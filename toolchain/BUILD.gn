@@ -1,0 +1,182 @@
+# Copyright (c) 2025 vivo Mobile Communication Co., Ltd.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#       http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+import("//build/toolchain/blueos.gni")
+import("//build/toolchain/cflags.gni")
+import("//build/toolchain/rustflags.gni")
+
+blueos_toolchain("blueos_riscv64") {
+  cc = "clang --target=riscv64 " + string_join(" ", riscv64_cflags)
+  cxx = "clang++ --target=riscv64 " + string_join(" ", riscv64_cflags)
+  ld = cc + " " + string_join(" ", riscv64_cflags + common_ldflags)
+  ar = "llvm-ar"
+  objcopy = "llvm-objcopy"
+  rustc = "rustc --target=riscv64-vivo-blueos "
+  clippy_driver = "clippy-driver --target=riscv64-vivo-blueos "
+  rustc_link_args =
+      string_join(" ", common_rustc_link_args + riscv64_rustc_link_args)
+  toolchain_args = {
+    current_os = "blueos"
+    current_cpu = "riscv64"
+  }
+}
+
+blueos_toolchain("thumbv7m") {
+  target = "thumbv7m-none-eabi"
+  cc = "clang --target=$target " + string_join(" ", thumbv7m_cflags)
+  cxx = "clang++ --target=$target " + string_join(" ", thumbv7m_cflags)
+  ld = "arm-none-eabi-gcc " + string_join(" ", common_ldflags)
+  ar = "llvm-ar"
+  objcopy = "llvm-objcopy"
+  rustc = "rustc --target=$target"
+  clippy_driver = "clippy-driver --target=$target"
+  rustc_link_args =
+      string_join(" ", common_rustc_link_args + thumbv7m_rustc_link_args)
+  toolchain_args = {
+    current_os = "none"
+    current_cpu = "arm"
+  }
+}
+
+blueos_toolchain("blueos_thumbv7m") {
+  target = "thumbv7m-none-eabi"
+  cc = "clang --target=$target " + string_join(" ", thumbv7m_cflags)
+  cxx = "clang++ --target=$target " + string_join(" ", thumbv7m_cflags)
+  ld = "arm-none-eabi-gcc " + string_join(" ", common_ldflags)
+  ar = "llvm-ar"
+  objcopy = "llvm-objcopy"
+  rustc = "rustc --target=thumbv7m-vivo-blueos-newlibeabi"
+  clippy_driver = "clippy-driver --target=thumbv7m-vivo-blueos-newlibeabi"
+  rustc_link_args =
+      string_join(" ", common_rustc_link_args + thumbv7m_rustc_link_args)
+  toolchain_args = {
+    current_os = "blueos"
+    current_cpu = "arm"
+  }
+}
+
+blueos_toolchain("thumbv8m") {
+  target = "thumbv8m.main-none-eabihf"
+  cc = "clang --target=$target " + string_join(" ", thumbv8m_cflags)
+  cxx = "clang++ --target=$target " + string_join(" ", thumbv8m_cflags)
+  ld = "arm-none-eabi-gcc " + string_join(" ", common_ldflags)
+  ar = "llvm-ar"
+  objcopy = "llvm-objcopy"
+  rustc = "rustc --target=$target"
+  clippy_driver = "clippy-driver --target=$target"
+  rustc_link_args =
+      string_join(" ", common_rustc_link_args + thumbv8m_rustc_link_args)
+  toolchain_args = {
+    current_os = "none"
+    current_cpu = "arm"
+  }
+}
+
+blueos_toolchain("blueos_thumbv8m") {
+  target = "thumbv8m.main-none-eabihf"
+  cc = "clang --target=$target " + string_join(" ", thumbv8m_cflags)
+  cxx = "clang++ --target=$target " + string_join(" ", thumbv8m_cflags)
+  ld = "arm-none-eabi-gcc " + string_join(" ", common_ldflags)
+  ar = "llvm-ar"
+  objcopy = "llvm-objcopy"
+  rustc = "rustc --target=thumbv8m.main-vivo-blueos-newlibeabihf"
+  clippy_driver =
+      "clippy-driver --target=thumbv8m.main-vivo-blueos-newlibeabihf"
+  rustc_link_args =
+      string_join(" ", common_rustc_link_args + thumbv8m_rustc_link_args)
+  toolchain_args = {
+    current_os = "blueos"
+    current_cpu = "arm"
+  }
+}
+
+blueos_toolchain("aarch64") {
+  cc = "aarch64-none-elf-gcc " + string_join(" ", aarch64_cflags)
+  cxx = "aarch64-none-elf-g++ " + string_join(" ", aarch64_cflags)
+  ld = cc + " " + string_join(" ", common_ldflags)
+  ar = "aarch64-none-elf-ar"
+  objcopy = "aarch64-none-elf-objcopy"
+  rustc = "rustc --target=aarch64-unknown-none"
+  clippy_driver = "clippy-driver --target=aarch64-unknown-none"
+  rustc_link_args =
+      string_join(" ", common_rustc_link_args + aarch64_rustc_link_args)
+  toolchain_args = {
+    current_os = "blueos"
+    current_cpu = "aarch64"
+  }
+}
+
+blueos_toolchain("blueos_aarch64") {
+  cc = "aarch64-none-elf-gcc " + string_join(" ", aarch64_cflags)
+  cxx = "aarch64-none-elf-g++ " + string_join(" ", aarch64_cflags)
+  ld = cc + " " + string_join(" ", common_ldflags)
+  ar = "aarch64-none-elf-ar"
+  objcopy = "aarch64-none-elf-objcopy"
+  rustc = "rustc --target=aarch64-vivo-blueos-newlib"
+  clippy_driver = "clippy-driver --target=aarch64-vivo-blueos-newlib"
+  rustc_link_args =
+      string_join(" ", common_rustc_link_args + aarch64_rustc_link_args)
+  toolchain_args = {
+    current_os = "blueos"
+    current_cpu = "aarch64"
+  }
+}
+
+blueos_toolchain("librs_linux_emulation_thumbv8m") {
+  cc = "arm-none-eabi-gcc "
+  cxx = "arm-none-eabi-g++ "
+  ld = "arm-none-eabi-gcc "
+  ar = "arm-none-eabi-ar "
+  objcopy = "arm-none-eabi-objcopy "
+  rustc = "rustc --target=thumbv8m.main-vivo-blueos-newlibeabihf"
+  clippy_driver =
+      "clippy-driver --target=thumbv8m.main-vivo-blueos-newlibeabihf"
+  rustc_link_args =
+      string_join(" ", common_rustc_link_args + thumbv8m_rustc_link_args)
+  toolchain_args = {
+    current_os = "blueos"
+    current_cpu = "arm"
+  }
+}
+
+blueos_toolchain("librs_linux_emulation_thumbv7m") {
+  cc = "arm-none-eabi-gcc "
+  cxx = "arm-none-eabi-g++ "
+  ld = "arm-none-eabi-gcc "
+  ar = "arm-none-eabi-ar "
+  objcopy = "arm-none-eabi-objcopy "
+  rustc = "rustc --target=thumbv7m-vivo-blueos-newlibeabi"
+  clippy_driver = "clippy-driver --target=thumbv7m-vivo-blueos-newlibeabi"
+  rustc_link_args =
+      string_join(" ", common_rustc_link_args + thumbv7m_rustc_link_args)
+  toolchain_args = {
+    current_os = "blueos"
+    current_cpu = "arm"
+  }
+}
+
+blueos_toolchain("host") {
+  cc = "clang"
+  cxx = "clang++"
+  ld = cc
+  ar = "llvm-ar"
+  objcopy = "llvm-objcopy"
+  rustc = "rustc"
+  clippy_driver = "clippy-driver"
+  rustc_link_args = ""
+  toolchain_args = {
+    current_os = host_os
+    current_cpu = host_cpu
+  }
+}
