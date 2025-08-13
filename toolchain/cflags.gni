@@ -19,12 +19,22 @@ thumbv7m_cflags = [
 ]
 
 thumbv8m_cflags = [
-  "-march=armv8.1-m.main+mve.fp+fp.dp",
-  "-mcpu=cortex-m55",
   "-mthumb",
   "-mfpu=fpv5-d16",
   "-mfloat-abi=hard",
 ]
+
+if (board == "qemu_mps3_an547") {
+  thumbv8m_cflags += [
+    "-mcpu=cortex-m55",
+    "-march=armv8.1-m.main+mve.fp+fp.dp",
+  ]
+} else if (board == "raspberry_pico2_cortexm") {
+  thumbv8m_cflags += [
+    "-mcpu=cortex-m33",
+    "-march=armv8.1-m.main+fp.dp",
+  ]
+}
 
 aarch64_cflags = [
   "-march=armv8-a",
