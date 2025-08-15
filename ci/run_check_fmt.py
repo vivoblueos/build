@@ -25,14 +25,14 @@ import platform
 def get_changed_files(repo: str) -> List[str]:
     """Get list of modified files in the merge request"""
     try:
-        subprocess.run(["git", "fetch", "origin", "master"],
+        subprocess.run(["git", "fetch", "origin", "main"],
                        check=True,
                        stdout=subprocess.DEVNULL,
                        stderr=subprocess.DEVNULL,
                        cwd=repo)
 
         result = subprocess.run([
-            "git", "diff", "--name-only", "--diff-filter=ACMR", "origin/master"
+            "git", "diff", "--name-only", "--diff-filter=ACMR", "origin/main"
         ],
                                 check=True,
                                 capture_output=True,
