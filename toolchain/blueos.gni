@@ -113,6 +113,21 @@ template("gen_qemu_runner") {
   }
 }
 
+template("gen_probe_runner") {
+  forward_variables_from(invoker, "*", [ "args" ])
+  assert(defined(img))
+  assert(defined(chip))
+  if (!defined(deps)) {
+    deps = [ img ]
+  } else {
+    deps += [ img ]
+  }
+  
+  action(target_name) {
+
+  }
+}
+
 template("gen_linux_emulation_runner") {
   forward_variables_from(invoker, "*", [ "args" ])
   assert(defined(img))
