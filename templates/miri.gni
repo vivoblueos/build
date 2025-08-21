@@ -1,0 +1,88 @@
+# Copyright (c) 2025 vivo Mobile Communication Co., Ltd.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#       http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# This template offers syntactic sugar for rust_library, rust_proc_macro target.
+
+template("miri_test") {
+  rust_library("${target_name}_dummy") {  # for {{externs}} and {{rustdeps}} in
+                                          # tool("rust_rlib")
+    sources = [ invoker.crate ]
+
+    deps = []
+    if (defined(invoker.deps)) {
+      foreach(dep, invoker.deps) {
+        dep_origin = dep
+        split_result = []
+        split_result = string_split(dep_origin, "(")
+        dep_clean = split_result[0]
+        deps += [ dep_clean + "($host_miri_toolchain)" ]
+      }
+    }
+  }
+
+  action(target_name) {
+    testonly = true
+    script = "//build/scripts/miri/run_miri.py"
+    outputs = [ "$target_gen_dir/${target_name}.stamp" ]
+    dummy_crate_name = "${target_name}_dummy"
+    dummy_target = ":${dummy_crate_name}($host_miri_dummy_toolchain)"
+    dummy_out_dir = get_label_info(dummy_target, "target_out_dir")
+
+    deps = [ dummy_target ]  # use special toolchain for dummy target, save
+                             # {{externs}} and {{rustdeps}} in .txt without
+                             # compiling
+
+    meta_args = []
+    dummy_rustdeps_externs_file_path =
+        rebase_path(dummy_out_dir + "/" + dummy_crate_name + "/" +
+                        "${dummy_crate_name}.txt",
+                    root_build_dir)
+    meta_args += [
+      dummy_rustdeps_externs_file_path,
+      target_name,
+    ]
+
+    # optional
+    # e.g. test_name = "bench_insert_and_detach_1_std"
+    test_args = []
+    if (defined(invoker.test_name) && invoker.test_name != "") {
+      test_args += [ invoker.test_name ]
+    }
+
+    # optional
+    # "-Zmiri-tree-borrows", use tree borrow model
+    # "-Zmiri-preemption-rate=0.01", controls how often Miri forces a thread context switch during scheduling.
+    # more miri flags...
+    miri_args = []
+    if (miri_sysroot != "") {
+      miri_args += [
+        "--sysroot",
+        miri_sysroot,
+      ]
+    }
+    if (defined(invoker.extra_miri_flags)) {
+      miri_args += invoker.extra_miri_flags
+    }
+
+    args = []
+    args += meta_args
+    args += [ rebase_path(invoker.crate, root_build_dir) ]  # lib.rs path
+    args += miri_args
+    args += [
+      "--",
+      "--nocapture",
+    ]
+    args += test_args
+  }
+}

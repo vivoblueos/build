@@ -56,6 +56,7 @@ class Config(object):
         self.build_type = 'release'
         self.board = 'qemu_mps3_an547'
         self.direct_syscall_handler = False
+        self.miri_sysroot = self.gen_miri_sysroot()
 
     def set_build_type(self, ty):
         self.build_type = ty
@@ -68,6 +69,28 @@ class Config(object):
     def set_direct_syscall_handler(self, flag):
         self.direct_syscall_handler = flag
         return self
+
+    def gen_miri_sysroot(self):
+        command_and_args = ["which", "rustc"]
+        result = subprocess.run(
+            command_and_args,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+        )
+        if result.returncode != 0:
+            sys.stderr.write(
+                f"which rustc failed:\nstdout:\n{result.stdout}\nstderr:\n{result.stderr}\n"
+            )
+            sys.exit(result.returncode)
+
+        rustc_path = result.stdout.strip()
+        prefix = os.path.dirname(os.path.dirname(rustc_path))
+        miri_sysroot_path = os.path.join(prefix, "lib", "rustlib",
+                                         "x86_64-unknown-linux-gnu",
+                                         "miri-sysroot")
+
+        return miri_sysroot_path
 
 
 class Runner(object):
@@ -92,10 +115,12 @@ class Runner(object):
             f'board="{self.config.board}"',
             f'build_type="{self.config.build_type}"',
             f"direct_syscall_handler={'true' if self.config.direct_syscall_handler else 'false'}",
+            f'miri_sysroot="{self.config.miri_sysroot}"'
         ])
 
     def run_gn_gen(self):
         args = self.make_gn_args_str()
+
         cmd = [
             'gn',
             'gen',
