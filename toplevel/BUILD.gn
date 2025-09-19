@@ -77,6 +77,7 @@ if (board != "none") {
     testonly = true
     deps = [
       ":check_infra",
+      ":check_infra_by_miri($host_miri_toolchain)",
       "//build/tests:tests($host_toolchain)",
     ]
   }
@@ -84,6 +85,11 @@ if (board != "none") {
   group("check_infra") {
     testonly = true
     deps = [ "//kernel/infra:check_infra($host_toolchain)" ]
+  }
+
+  group("check_infra_by_miri") {
+    testonly = true
+    deps = [ "//kernel/infra:check_infra_by_miri($host_miri_toolchain)" ]
   }
 }
 
