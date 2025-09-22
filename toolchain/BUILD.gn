@@ -175,41 +175,8 @@ blueos_toolchain("host") {
   rustc = "rustc"
   clippy_driver = "clippy-driver"
   rustc_link_args = ""
-
   toolchain_args = {
     current_os = host_os
     current_cpu = host_cpu
   }
-}
-
-# miri only supports few targets (like host(x86-64), we run miri test for blueos only on host(x86-64))
-blueos_miri_toolchain("host_miri") {
-  rustc = "rustc"
-  clippy_driver = "clippy-driver"
-  objcopy = "llvm-objcopy"
-  rustc_link_args = ""
-
-  toolchain_args = {
-    current_os = host_os
-    current_cpu = host_cpu
-  }
-
-  externs_outputs = false
-}
-
-blueos_miri_toolchain("host_miri_dummy") {  # for dummy crate in
-  # template("miri_test"), only save
-  # {{rustdeps}} and {{externs}} to .txt,
-  # no compiling
-  rustc = "rustc"
-  clippy_driver = "clippy-driver"
-  objcopy = "llvm-objcopy"
-  rustc_link_args = ""
-
-  toolchain_args = {
-    current_os = host_os
-    current_cpu = host_cpu
-  }
-
-  externs_outputs = true
 }

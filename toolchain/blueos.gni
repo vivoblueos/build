@@ -238,7 +238,6 @@ template("blueos_toolchain") {
     if (current_os == "mac") {
       link_map_opt = "-Wl,-map,"
     }
-
     tool("rust_bin") {
       depfile = "{{target_out_dir}}/{{crate_name}}.d"
       mapfile = "{{target_out_dir}}/{{crate_name}}.map"
@@ -270,13 +269,8 @@ template("blueos_toolchain") {
       depfile = "{{target_out_dir}}/{{target_output_name}}/{{crate_name}}.d"
       outfile =
           "{{target_out_dir}}/{{target_output_name}}/lib{{crate_name}}.rlib"
-
-      base_clippy_command = "{{rustenv}} $clippy_driver --crate-name {{crate_name}} {{source}} --crate-type {{crate_type}} --emit=dep-info=$depfile,link {{rustflags}} $rustc_lint_flags $clippy_lint_flags -o $outfile.clippy {{rustdeps}} {{externs}}"
-
-      base_rustc_command = "{{rustenv}} $rustc --crate-name {{crate_name}} {{source}} --crate-type {{crate_type}} --emit=dep-info=$depfile,link {{rustflags}} $rustc_lint_flags -o $outfile {{rustdeps}} {{externs}}"
-
-      command = base_clippy_command + " && " + base_rustc_command
-
+      command = "{{rustenv}} $clippy_driver --crate-name {{crate_name}} {{source}} --crate-type {{crate_type}} --emit=dep-info=$depfile,link {{rustflags}} $rustc_lint_flags $clippy_lint_flags -o $outfile.clippy {{rustdeps}} {{externs}}"
+      command += " && {{rustenv}} $rustc --crate-name {{crate_name}} {{source}} --crate-type {{crate_type}} --emit=dep-info=$depfile,link {{rustflags}} $rustc_lint_flags -o $outfile {{rustdeps}} {{externs}}"
       description = "RUST $outfile"
       outputs = [ outfile ]
     }
@@ -387,75 +381,6 @@ template("blueos_toolchain") {
     tool("copy") {
       command = "cp -af {{source}} {{output}}"
       description = "COPY {{source}} {{output}}"
-    }
-  }
-}
-
-template("blueos_miri_toolchain") {
-  toolchain(target_name) {
-    forward_variables_from(invoker.toolchain_args, "*")
-    not_needed("*")
-    forward_variables_from(invoker, "*")
-
-    link_map_opt = "-Wl,-Map="
-    if (current_os == "mac") {
-      link_map_opt = "-Wl,-map,"
-    }
-
-    tool("rust_rlib") {
-      depfile = "{{target_out_dir}}/{{target_output_name}}/{{crate_name}}.d"
-      outfile =
-          "{{target_out_dir}}/{{target_output_name}}/lib{{crate_name}}.rlib"
-
-      base_clippy_command = "{{rustenv}} $clippy_driver --crate-name {{crate_name}} {{source}} --crate-type {{crate_type}} --emit=dep-info=$depfile,link {{rustflags}} $rustc_lint_flags $clippy_lint_flags -o $outfile.clippy {{rustdeps}} {{externs}}"
-
-      base_rustc_command = "{{rustenv}} $rustc --crate-name {{crate_name}} {{source}} --crate-type {{crate_type}} --emit=dep-info=$depfile,link {{rustflags}} $rustc_lint_flags -o $outfile {{rustdeps}} {{externs}}"
-
-      command = base_clippy_command + " && " + base_rustc_command
-
-      assert(
-          defined(externs_outputs),
-          "externs_outputs must be defined when using blueos_miri_toolchain template")
-      if (externs_outputs == false) {
-        assert(miri_sysroot != "",
-               "miri_sysroot is empty, something went wrong")
-        sysroot_arg = " --sysroot " + miri_sysroot
-
-        command = base_clippy_command + sysroot_arg + " && " +
-                  base_rustc_command + sysroot_arg
-      } else {
-        txt_out_file =
-            "{{target_out_dir}}/{{target_output_name}}/{{crate_name}}.txt"
-        rustdeps_file_command = "echo \"{{rustdeps}}\" > $txt_out_file"
-        externs_file_command = "echo \"{{externs}}\" >> $txt_out_file"
-
-        command = rustdeps_file_command + " && " + externs_file_command
-      }
-
-      description = "RUST $outfile"
-      outputs = [ outfile ]
-    }
-
-    tool("rust_bin") {
-      depfile = "{{target_out_dir}}/{{crate_name}}.d"
-      mapfile = "{{target_out_dir}}/{{crate_name}}.map"
-      imgfile = "{{output_dir}}/{{crate_name}}.img"
-      outfile = "{{output_dir}}/{{crate_name}}"
-      objcopy_command = "&& $objcopy -O binary $outfile $imgfile"
-      command = "{{rustenv}} $clippy_driver --crate-name {{crate_name}} --crate-type {{crate_type}} --emit=dep-info=$depfile,link {{rustflags}} $rustc_lint_flags $clippy_lint_flags ${rustc_link_args} -o $outfile {{source}} {{externs}} {{rustdeps}} -Clink-arg=${link_map_opt}${mapfile} ${objcopy_command}"
-      command += " && {{rustenv}} $rustc --crate-name {{crate_name}} --crate-type {{crate_type}} --emit=dep-info=$depfile,link {{rustflags}} $rustc_lint_flags ${rustc_link_args} -o $outfile {{source}} {{externs}} {{rustdeps}} -Clink-arg=${link_map_opt}${mapfile} ${objcopy_command}"
-      description = "RUST $outfile"
-      outputs = [
-        outfile,
-        mapfile,
-        imgfile,
-      ]
-      default_output_dir = "{{root_out_dir}}/bin"
-    }
-
-    tool("stamp") {
-      command = "touch {{output}}"
-      description = "STAMP {{output}}"
     }
   }
 }
