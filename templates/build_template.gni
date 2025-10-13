@@ -14,5 +14,4 @@
 
 import("//build/templates/bindgen.gni")
 import("//build/templates/cbindgen.gni")
-import("//build/templates/miri.gni")
 import("//build/templates/rust.gni")

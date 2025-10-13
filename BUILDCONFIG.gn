@@ -27,13 +27,9 @@ declare_args() {
   coverage = false
   profile = false
   rust_sysroot = ""
-  miri_sysroot = ""
 }
 
 host_toolchain = "//build/toolchain:host"
-host_miri_toolchain = "//build/toolchain:host_miri"
-host_miri_dummy_toolchain = "//build/toolchain:host_miri_dummy"
-
 if (board == "qemu_mps3_an547") {
   set_default_toolchain("//build/toolchain:blueos_thumbv8m")
   llvm_target = "thumbv8m.main-none-eabihf"
