@@ -34,8 +34,10 @@ blueos_toolchain("blueos_riscv64") {
 
 blueos_toolchain("thumbv7m") {
   target = "thumbv7m-none-eabi"
-  cc = "clang --target=$target " + string_join(" ", thumbv7m_cflags)
-  cxx = "clang++ --target=$target " + string_join(" ", thumbv7m_cflags)
+  cc = "clang --target=$target --sysroot ${sysroot_path} " +
+       string_join(" ", thumbv7m_cflags)
+  cxx = "clang++ --target=$target --sysroot ${sysroot_path} " +
+        string_join(" ", thumbv7m_cflags)
   ld = "arm-none-eabi-gcc " + string_join(" ", common_ldflags)
   ar = "llvm-ar"
   objcopy = "llvm-objcopy"
@@ -51,8 +53,10 @@ blueos_toolchain("thumbv7m") {
 
 blueos_toolchain("blueos_thumbv7m") {
   target = "thumbv7m-none-eabi"
-  cc = "clang --target=$target " + string_join(" ", thumbv7m_cflags)
-  cxx = "clang++ --target=$target " + string_join(" ", thumbv7m_cflags)
+  cc = "clang --target=$target --sysroot ${sysroot_path} " +
+       string_join(" ", thumbv7m_cflags)
+  cxx = "clang++ --target=$target --sysroot ${sysroot_path} " +
+        string_join(" ", thumbv7m_cflags)
   ld = "arm-none-eabi-gcc " + string_join(" ", common_ldflags)
   ar = "llvm-ar"
   objcopy = "llvm-objcopy"
@@ -68,8 +72,10 @@ blueos_toolchain("blueos_thumbv7m") {
 
 blueos_toolchain("thumbv8m") {
   target = "thumbv8m.main-none-eabihf"
-  cc = "clang --target=$target " + string_join(" ", thumbv8m_cflags)
-  cxx = "clang++ --target=$target " + string_join(" ", thumbv8m_cflags)
+  cc = "clang --target=$target --sysroot ${sysroot_path} " +
+       string_join(" ", thumbv8m_cflags)
+  cxx = "clang++ --target=$target --sysroot ${sysroot_path} " +
+        string_join(" ", thumbv8m_cflags)
   ld = "arm-none-eabi-gcc " + string_join(" ", common_ldflags)
   ar = "llvm-ar"
   objcopy = "llvm-objcopy"
@@ -85,8 +91,10 @@ blueos_toolchain("thumbv8m") {
 
 blueos_toolchain("blueos_thumbv8m") {
   target = "thumbv8m.main-none-eabihf"
-  cc = "clang --target=$target " + string_join(" ", thumbv8m_cflags)
-  cxx = "clang++ --target=$target " + string_join(" ", thumbv8m_cflags)
+  cc = "clang --target=$target --sysroot ${sysroot_path} " +
+       string_join(" ", thumbv8m_cflags)
+  cxx = "clang++ --target=$target --sysroot ${sysroot_path} " +
+        string_join(" ", thumbv8m_cflags)
   ld = "arm-none-eabi-gcc " + string_join(" ", common_ldflags)
   ar = "llvm-ar"
   objcopy = "llvm-objcopy"
