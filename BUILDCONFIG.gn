@@ -30,7 +30,7 @@ declare_args() {
 }
 
 host_toolchain = "//build/toolchain:host"
-sysroot_path = rebase_path("//external/newlib/newlib/libc/include")
+sysroot_path = rebase_path("//external/newlib/newlib/libc")
 if (board == "qemu_mps3_an547") {
   set_default_toolchain("//build/toolchain:blueos_thumbv8m")
   llvm_target = "thumbv8m.main-none-eabihf"
