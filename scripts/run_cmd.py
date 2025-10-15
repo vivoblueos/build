@@ -24,14 +24,6 @@ import argparse
 LOGGER = logging.getLogger(__name__)
 LOGGER.setLevel(logging.INFO)
 
-
-def run_command(args):
-    # Run the command
-    test_dir = os.path.abspath(args.test_dir)
-    # Run command in test directory
-    return subprocess.call(args.bin, cwd=test_dir)
-
-
 def main():
     parser = argparse.ArgumentParser(
         description='Run command with optional coverage check')
@@ -39,14 +31,18 @@ def main():
     parser.add_argument('-t',
                         '--test-dir',
                         help='Test directory path',
-                        required=True)
+                        required=False,
+                        default=None)
 
     args = parser.parse_args()
 
-    # Create test directory if it doesn't exist
-    os.makedirs(args.test_dir, exist_ok=True)
-
-    return run_command(args)
+    # Run the command
+    if args.test_dir:
+        test_dir = os.path.abspath(args.test_dir)
+        os.makedirs(test_dir, exist_ok=True)
+        return subprocess.call(args.bin, cwd=test_dir, shell=True)
+    else:
+        return subprocess.call(args.bin, shell=True)
 
 
 if __name__ == '__main__':

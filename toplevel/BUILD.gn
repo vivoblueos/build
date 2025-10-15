@@ -22,6 +22,7 @@ if (board != "none") {
   group("check_all") {
     testonly = true
     deps = [
+      ":check_adapter",
       ":check_kernel",
       ":check_librs",
       ":check_loader",
@@ -48,6 +49,10 @@ if (board != "none") {
   group("check_librs") {
     testonly = true
     deps = [ "//librs:check_librs($libc_toolchain)" ]
+  }
+  group("check_adapter") {
+    testonly = true
+    deps = [ "//kernel/adapter:check_adapter($libc_toolchain)" ]
   }
 
   # only tested librs+qemu-user on arm cortex-m now
