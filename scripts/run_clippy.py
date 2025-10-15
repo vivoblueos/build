@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 # Copyright (c) 2025 vivo Mobile Communication Co., Ltd.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,7 +14,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import("//build/templates/bindgen.gni")
-import("//build/templates/cbindgen.gni")
-import("//build/templates/clippy.gni")
-import("//build/templates/rust.gni")
+import sys
+import subprocess
+
+if __name__ == '__main__':
+    sys.exit(subprocess.call(['sh'] + sys.argv[1:]))
