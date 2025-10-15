@@ -57,6 +57,18 @@ if (board == "qemu_mps3_an547") {
   libc_toolchain = "//build/toolchain:blueos_aarch64"
   kernel_toolchain = "//build/toolchain:blueos_aarch64"
   librs_linux_emulation_toolchain = "//build/toolchain:blueos_aarch64"
+} else if (board == "bcm2711") {
+  llvm_target = "aarch64-unknown-none"
+  set_default_toolchain("//build/toolchain:blueos_aarch64")
+
+  # start reserved qemu parameters for bcm2711,
+  qemu_exe = "qemu-system-aarch64"
+  machine = "virt,virtualization=on,gic-version=3"
+
+  # end reserved qemu parameters for bcm2711
+  libc_toolchain = "//build/toolchain:blueos_aarch64"
+  kernel_toolchain = "//build/toolchain:blueos_aarch64"
+  librs_linux_emulation_toolchain = "//build/toolchain:blueos_aarch64"
 } else if (board == "qemu_riscv64") {
   llvm_target = "riscv64"
   set_default_toolchain("//build/toolchain:blueos_riscv64")

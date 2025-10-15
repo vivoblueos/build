@@ -26,10 +26,13 @@ thumbv8m_cflags = [
   "-mfloat-abi=hard",
 ]
 
-aarch64_cflags = [
-  "-march=armv8-a",
-  "-mtune=cortex-a53",
-]
+aarch64_cflags = [ "-march=armv8-a" ]
+
+if (board == "bcm2711") {
+  aarch64_cflags += [ "-mcpu=cortex-a72" ]
+} else if (board == "qemu_virt64_aarch64") {
+  aarch64_cflags += [ "-mcpu=cortex-a53" ]
+}
 
 riscv64_cflags = [
   "-mabi=lp64",
