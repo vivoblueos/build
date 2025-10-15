@@ -239,18 +239,31 @@ template("blueos_toolchain") {
       link_map_opt = "-Wl,-map,"
     }
     tool("rust_bin") {
-      depfile = "{{target_out_dir}}/{{crate_name}}.d"
-      mapfile = "{{target_out_dir}}/{{crate_name}}.map"
-      imgfile = "{{output_dir}}/{{crate_name}}.img"
-      outfile = "{{output_dir}}/{{crate_name}}"
+      depfile = "{{target_out_dir}}/{{target_output_name}}.d"
+      mapfile = "{{target_out_dir}}/{{target_output_name}}.map"
+      clippy_rspfile = "{{target_out_dir}}/{{target_output_name}}.clippy_rsp"
+      imgfile = "{{output_dir}}/{{target_output_name}}.img"
+      outfile = "{{output_dir}}/{{target_output_name}}"
+
+      clippy_command = "{{rustenv}} ${clippy_driver} --crate-name {{crate_name}} --crate-type {{crate_type}} {{rustflags}} $rustc_lint_flags $clippy_lint_flags ${rustc_link_args} {{source}} {{externs}} {{rustdeps}} -o ${outfile}.clippy"
+
+      # Use echo '...' here so that we can keep escape chars, i.e., keep the
+      # verbatim clippy_command. Then we can just use the shell to run the `*.clippy_rsp`
+      # file.
+      gen_clippy_rspfile_command =
+          " && echo '${clippy_command}' > ${clippy_rspfile}"
+
       objcopy_command = "&& $objcopy -O binary $outfile $imgfile"
-      command = "{{rustenv}} $clippy_driver --crate-name {{crate_name}} --crate-type {{crate_type}} --emit=dep-info=$depfile,link {{rustflags}} $rustc_lint_flags $clippy_lint_flags ${rustc_link_args} -o $outfile {{source}} {{externs}} {{rustdeps}} -Clink-arg=${link_map_opt}${mapfile} ${objcopy_command}"
-      command += " && {{rustenv}} $rustc --crate-name {{crate_name}} --crate-type {{crate_type}} --emit=dep-info=$depfile,link {{rustflags}} $rustc_lint_flags ${rustc_link_args} -o $outfile {{source}} {{externs}} {{rustdeps}} -Clink-arg=${link_map_opt}${mapfile} ${objcopy_command}"
+      rustc_command = "{{rustenv}} ${rustc} --crate-name {{crate_name}} --crate-type {{crate_type}} --emit=dep-info=$depfile,link {{rustflags}} $rustc_lint_flags ${rustc_link_args} -o $outfile {{source}} {{externs}} {{rustdeps}} -Clink-arg=${link_map_opt}${mapfile}"
+
+      command =
+          "${rustc_command} ${objcopy_command} ${gen_clippy_rspfile_command}"
       description = "RUST $outfile"
       outputs = [
         outfile,
         mapfile,
         imgfile,
+        clippy_rspfile,
       ]
       default_output_dir = "{{root_out_dir}}/bin"
     }
@@ -258,10 +271,17 @@ template("blueos_toolchain") {
     tool("rust_staticlib") {
       depfile = "{{target_out_dir}}/{{target_output_name}}/{{crate_name}}.d"
       outfile = "{{target_out_dir}}/{{target_output_name}}/lib{{crate_name}}.a"
-      command = "{{rustenv}} $clippy_driver --crate-name {{crate_name}} {{source}} --crate-type {{crate_type}} --emit=dep-info=$depfile,link {{rustflags}} $rustc_lint_flags $clippy_lint_flags -o $outfile {{rustdeps}} {{externs}}"
-      command += " && {{rustenv}} $rustc --crate-name {{crate_name}} {{source}} --crate-type {{crate_type}} --emit=dep-info=$depfile,link {{rustflags}} $rustc_lint_flags -o $outfile {{rustdeps}} {{externs}}"
+      clippy_rspfile = "{{target_out_dir}}/{{target_output_name}}.clippy_rsp"
+      clippy_command = "{{rustenv}} $clippy_driver --crate-name {{crate_name}} {{source}} --crate-type {{crate_type}} {{rustflags}} $rustc_lint_flags $clippy_lint_flags {{rustdeps}} {{externs}} -o ${outfile}.clippy"
+      gen_clippy_rspfile_command =
+          " && echo '${clippy_command}' > ${clippy_rspfile}"
+      rustc_command = "{{rustenv}} $rustc --crate-name {{crate_name}} {{source}} --crate-type {{crate_type}} --emit=dep-info=$depfile,link {{rustflags}} $rustc_lint_flags -o $outfile {{rustdeps}} {{externs}}"
+      command = "${rustc_command} ${gen_clippy_rspfile_command}"
       description = "RUST $outfile"
-      outputs = [ outfile ]
+      outputs = [
+        outfile,
+        clippy_rspfile,
+      ]
       default_output_dir = "{{root_out_dir}}/lib"
     }
 
@@ -269,10 +289,17 @@ template("blueos_toolchain") {
       depfile = "{{target_out_dir}}/{{target_output_name}}/{{crate_name}}.d"
       outfile =
           "{{target_out_dir}}/{{target_output_name}}/lib{{crate_name}}.rlib"
-      command = "{{rustenv}} $clippy_driver --crate-name {{crate_name}} {{source}} --crate-type {{crate_type}} --emit=dep-info=$depfile,link {{rustflags}} $rustc_lint_flags $clippy_lint_flags -o $outfile.clippy {{rustdeps}} {{externs}}"
-      command += " && {{rustenv}} $rustc --crate-name {{crate_name}} {{source}} --crate-type {{crate_type}} --emit=dep-info=$depfile,link {{rustflags}} $rustc_lint_flags -o $outfile {{rustdeps}} {{externs}}"
+      clippy_rspfile = "{{target_out_dir}}/{{target_output_name}}.clippy_rsp"
+      clippy_command = "{{rustenv}} $clippy_driver --crate-name {{crate_name}} {{source}} --crate-type {{crate_type}} {{rustflags}} $rustc_lint_flags $clippy_lint_flags {{rustdeps}} {{externs}} -o ${outfile}.clippy"
+      gen_clippy_rspfile_command =
+          " && echo '${clippy_command}' > ${clippy_rspfile}"
+      rustc_command = "{{rustenv}} $rustc --crate-name {{crate_name}} {{source}} --crate-type {{crate_type}} --emit=dep-info=$depfile,link {{rustflags}} $rustc_lint_flags -o $outfile {{rustdeps}} {{externs}}"
+      command = "${rustc_command} ${gen_clippy_rspfile_command}"
       description = "RUST $outfile"
-      outputs = [ outfile ]
+      outputs = [
+        outfile,
+        clippy_rspfile,
+      ]
     }
 
     tool("rust_macro") {
@@ -283,10 +310,17 @@ template("blueos_toolchain") {
       }
       depfile = "{{target_out_dir}}/{{crate_name}}.d"
       outfile = "{{target_out_dir}}/lib{{crate_name}}{{output_extension}}"
-      command = "{{rustenv}} $clippy_driver --crate-name {{crate_name}} {{source}} --crate-type {{crate_type}} --emit=dep-info=$depfile,link {{rustflags}} $rustc_lint_flags $clippy_lint_flags ${rustc_link_args} -o $outfile {{rustdeps}} {{externs}}"
-      command += " && {{rustenv}} $rustc --crate-name {{crate_name}} {{source}} --crate-type {{crate_type}} --emit=dep-info=$depfile,link {{rustflags}} $rustc_lint_flags ${rustc_link_args} -o $outfile {{rustdeps}} {{externs}}"
+      clippy_rspfile = "{{target_out_dir}}/{{target_output_name}}.clippy_rsp"
+      clippy_command = "{{rustenv}} $clippy_driver --crate-name {{crate_name}} {{source}} --crate-type {{crate_type}} {{rustflags}} $rustc_lint_flags $clippy_lint_flags ${rustc_link_args} {{rustdeps}} {{externs}} -o ${outfile}.clippy"
+      gen_clippy_rspfile_command =
+          " && echo '${clippy_command}' > ${clippy_rspfile}"
+      rustc_command = "{{rustenv}} $rustc --crate-name {{crate_name}} {{source}} --crate-type {{crate_type}} --emit=dep-info=$depfile,link {{rustflags}} $rustc_lint_flags ${rustc_link_args} -o $outfile {{rustdeps}} {{externs}}"
+      command = "${rustc_command} ${gen_clippy_rspfile_command}"
       description = "RUST $outfile"
-      outputs = [ outfile ]
+      outputs = [
+        outfile,
+        clippy_rspfile,
+      ]
     }
 
     tool("rust_cdylib") {
@@ -297,10 +331,17 @@ template("blueos_toolchain") {
       }
       depfile = "{{target_out_dir}}/{{crate_name}}.d"
       outfile = "{{output_dir}}/lib{{crate_name}}{{output_extension}}"
-      command = "{{rustenv}} $clippy_driver --crate-name {{crate_name}} {{source}} --crate-type {{crate_type}} --emit=dep-info=$depfile,link {{rustflags}} $rustc_lint_flags $clippy_lint_flags ${rustc_link_args} -o $outfile {{rustdeps}} {{externs}}"
-      command += " && {{rustenv}} $rustc --crate-name {{crate_name}} {{source}} --crate-type {{crate_type}} --emit=dep-info=$depfile,link {{rustflags}} $rustc_lint_flags ${rustc_link_args} -o $outfile {{rustdeps}} {{externs}}"
+      clippy_rspfile = "{{target_out_dir}}/{{target_output_name}}.clippy_rsp"
+      clippy_command = "{{rustenv}} $clippy_driver --crate-name {{crate_name}} {{source}} --crate-type {{crate_type}} {{rustflags}} $rustc_lint_flags $clippy_lint_flags ${rustc_link_args} {{rustdeps}} {{externs}} -o ${outfile}.clippy"
+      gen_clippy_rspfile_command =
+          " && echo '${clippy_command}' > ${clippy_rspfile}"
+      rustc_command = "{{rustenv}} $rustc --crate-name {{crate_name}} {{source}} --crate-type {{crate_type}} --emit=dep-info=$depfile,link {{rustflags}} $rustc_lint_flags ${rustc_link_args} -o $outfile {{rustdeps}} {{externs}}"
+      command = "${rustc_command} ${gen_clippy_rspfile_command}"
       description = "RUST $outfile"
-      outputs = [ outfile ]
+      outputs = [
+        outfile,
+        clippy_rspfile,
+      ]
       default_output_dir = "{{root_out_dir}}/lib"
     }
 
