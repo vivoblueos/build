@@ -333,6 +333,28 @@ template("blueos_toolchain") {
       ]
     }
 
+    tool("rust_dylib") {
+      if (current_os == "ios" || current_os == "mac") {
+        default_output_extension = ".dylib"
+      } else {
+        default_output_extension = ".so"
+      }
+      depfile = "{{target_out_dir}}/{{crate_name}}.d"
+      outfile = "{{output_dir}}/lib{{crate_name}}{{output_extension}}"
+      clippy_rspfile = "{{target_out_dir}}/{{target_output_name}}.clippy_rsp"
+      clippy_command = "{{rustenv}} $clippy_driver --crate-name {{crate_name}} {{source}} --crate-type {{crate_type}} {{rustflags}} $rustc_lint_flags $clippy_lint_flags ${rustc_link_args} {{rustdeps}} {{externs}} -o ${outfile}.clippy"
+      gen_clippy_rspfile_command =
+          " && echo '${clippy_command}' > ${clippy_rspfile}"
+      rustc_command = "{{rustenv}} $rustc --crate-name {{crate_name}} {{source}} --crate-type {{crate_type}} --emit=dep-info=$depfile,link {{rustflags}} $rustc_lint_flags ${rustc_link_args} -o $outfile {{rustdeps}} {{externs}}"
+      command = "${rustc_command} ${gen_clippy_rspfile_command}"
+      description = "RUST $outfile"
+      outputs = [
+        outfile,
+        clippy_rspfile,
+      ]
+      default_output_dir = "{{root_out_dir}}/lib"
+    }
+
     tool("rust_macro") {
       if (current_os == "ios" || current_os == "mac") {
         default_output_extension = ".dylib"
