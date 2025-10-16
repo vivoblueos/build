@@ -57,7 +57,7 @@ config("debug") {
                 "--cfg",
                 "debug",
               ] + _common_rustflags
-  if (board == "qemu_mps3_an547" || board == "raspberry_pico2_cortexm") {
+  if (board == "qemu_mps3_an547") {
     rustflags += [ "-Cdebuginfo=limited" ]
   } else {
     rustflags += [ "-Cdebuginfo=full" ]

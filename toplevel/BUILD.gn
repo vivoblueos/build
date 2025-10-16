@@ -14,20 +14,7 @@
 
 import("//build/toolchain/blueos.gni")
 
-if (board == "raspberry_pico2_cortexm") {
-  group("default") {
-    deps = []
-  }
-
-  group("build_apps") {
-    deps = [ "//apps/example:check_apps($libc_toolchain)" ]
-  }
-
-  group("check_kernel") {
-    testonly = true
-    deps = [ "//kernel/kernel:check_kernel_probe($libc_toolchain)" ]
-  }
-} else if (board != "none") {
+if (board != "none") {
   group("default") {
     deps = []
   }

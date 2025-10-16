@@ -64,8 +64,6 @@ if (board == "qemu_mps3_an547") {
   machine = "virt"
   libc_toolchain = "//build/toolchain:blueos_riscv64"
   kernel_toolchain = "//build/toolchain:blueos_riscv64"
-} else if (board == "raspberry_pico2_cortexm") {
-  import("//kernel/kernel/src/boards/$board/bsp_info.gni")
 } else {
   set_default_toolchain("//build/toolchain:host")
   libc_toolchain = "//build/toolchain:host"

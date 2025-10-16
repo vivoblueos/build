@@ -31,18 +31,6 @@ thumbv8m_rustc_link_args = [
   "-Clinker=arm-none-eabi-gcc",
 ]
 
-if (board == "qemu_mps3_an547") {
-  thumbv8m_rustc_link_args += [
-    "-Clink-arg=-march=armv8.1-m.main+mve.fp+fp.dp",
-    "-Clink-arg=-mcpu=cortex-m55",
-  ]
-} else if (board == "raspberry_pico2_cortexm") {
-  thumbv8m_rustc_link_args += [
-    "-Clink-arg=-march=armv8.1-m.main+fp.dp",
-    "-Clink-arg=-mcpu=cortex-m33",
-  ]
-}
-
 aarch64_rustc_link_args = [
   "-Clink-arg=-march=armv8-a",
   "-Clink-arg=-mtune=cortex-a53",

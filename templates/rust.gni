@@ -49,7 +49,6 @@ template("build_rust") {
     crate_name = invoker.crate_name
   }
 
-  rustenv = [ "CARGO_CRATE_NAME=$crate_name" ]
   if (defined(rustflags)) {
   } else {
     rustflags = []

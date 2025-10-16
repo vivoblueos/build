@@ -40,33 +40,6 @@ template("postlink_action") {
   }
 }
 
-template("gen_probe_runner") {
-  forward_variables_from(invoker, "*", [ "args" ])
-  assert(defined(img))
-  assert(defined(chip))
-  if (!defined(deps)) {
-    deps = [ img ]
-  } else {
-    deps += [ img ]
-  }
-  img_path = get_label_info(img, "root_out_dir") + "/bin/" +
-             get_label_info(img, "name")
-  out_dir = get_label_info(img, "root_out_dir") + "/bin"
-  outputs = [ out_dir + "/" + "${target_name}-probe.sh" ]
-  action(target_name) {
-    script = "//build/scripts/gen_probe_runner.py"
-    args = [
-      "--chip",
-      chip,
-      "--out-dir",
-      rebase_path(out_dir),
-      "--name",
-      target_name,
-      rebase_path(img_path),
-    ]
-  }
-}
-
 template("gen_qemu_runner") {
   forward_variables_from(invoker, "*", [ "args" ])
   assert(defined(img))
@@ -191,11 +164,7 @@ template("run_qemu_check") {
   }
 
   outs = get_target_outputs(runner)
-  filtered = filter_include(outs,
-                            [
-                              "*-qemu.sh",
-                              "*-probe.sh",
-                            ])
+  filtered = filter_include(outs, [ "*-qemu.sh" ])
   runner_path = rebase_path(filtered[0])
   test_dir = get_label_info(runner, "root_out_dir") + "/test/" + target_name
   qemu_action_name = target_name
