@@ -14,7 +14,20 @@
 
 import("//build/toolchain/blueos.gni")
 
-if (board != "none") {
+if (board == "raspberry_pico2_cortexm") {
+  group("default") {
+    deps = []
+  }
+
+  group("build_apps") {
+    deps = [ "//apps/example:check_apps($libc_toolchain)" ]
+  }
+
+  group("check_kernel") {
+    testonly = true
+    deps = [ "//kernel/kernel:check_kernel_probe($libc_toolchain)" ]
+  }
+} else if (board != "none") {
   group("default") {
     deps = []
   }
@@ -28,6 +41,18 @@ if (board != "none") {
       ":check_loader",
       ":check_rsrt",
       ":check_shell",
+      ":clippy_all",
+    ]
+  }
+
+  group("clippy_all") {
+    testonly = true
+    deps = [
+      ":clippy_adapter",
+      ":clippy_kernel",
+      ":clippy_librs",
+      ":clippy_loader",
+      ":clippy_rsrt",
     ]
   }
 
@@ -41,9 +66,18 @@ if (board != "none") {
     deps = [ "kernel/rsrt:check_rsrt($libc_toolchain)" ]
   }
 
+  group("clippy_rsrt") {
+    deps = [ "//kernel/rsrt:check_rsrt_by_clippy($libc_toolchain)" ]
+  }
+
   group("check_kernel") {
     testonly = true
     deps = [ "//kernel/kernel:check_kernel($kernel_toolchain)" ]
+  }
+
+  group("clippy_kernel") {
+    testonly = true
+    deps = [ "//kernel/kernel:check_kernel_by_clippy($kernel_toolchain)" ]
   }
 
   group("check_librs") {
@@ -55,6 +89,21 @@ if (board != "none") {
     deps = [ "//kernel/adapter:check_adapter($libc_toolchain)" ]
   }
 
+  group("clippy_librs") {
+    testonly = true
+    deps = [ "//librs:check_librs_by_clippy($libc_toolchain)" ]
+  }
+
+  group("check_adapter") {
+    testonly = true
+    deps = [ "//kernel/adapter:check_adapter($libc_toolchain)" ]
+  }
+
+  group("clippy_adapter") {
+    testonly = true
+    deps = [ "//kernel/adapter:check_adapter_by_clippy($libc_toolchain)" ]
+  }
+
   # only tested librs+qemu-user on arm cortex-m now
   if (board == "qemu_mps3_an547" || board == "qemu_mps2_an385") {
     group("check_librs_linux_emulation") {
@@ -64,9 +113,15 @@ if (board != "none") {
       ]
     }
   }
+
   group("check_loader") {
     testonly = true
     deps = [ "//kernel/loader:check_loader($libc_toolchain)" ]
+  }
+
+  group("clippy_loader") {
+    testonly = true
+    deps = [ "//kernel/loader:check_loader_by_clippy($libc_toolchain)" ]
   }
 
   group("check_apps") {

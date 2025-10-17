@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 # Copyright (c) 2025 vivo Mobile Communication Co., Ltd.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,38 +14,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-thumbv7m_cflags = [
-  "-march=armv7em",
-  "-mcpu=cortex-m3",
-  "-mthumb",
-]
+import sys
+import subprocess
 
-thumbv8m_cflags = [
-  "-mthumb",
-  "-mfpu=fpv5-d16",
-  "-mfloat-abi=hard",
-]
-
-if (board == "qemu_mps3_an547") {
-  thumbv8m_cflags += [
-    "-mcpu=cortex-m55",
-    "-march=armv8.1-m.main+mve.fp+fp.dp",
-  ]
-} else if (board == "raspberry_pico2_cortexm") {
-  thumbv8m_cflags += [
-    "-mcpu=cortex-m33",
-    "-march=armv8.1-m.main+fp.dp",
-  ]
-}
-
-aarch64_cflags = [
-  "-march=armv8-a",
-  "-mtune=cortex-a53",
-]
-
-riscv64_cflags = [
-  "-mabi=lp64",
-  "-mcmodel=medany",
-]
-
-common_ldflags = [ "-Wl,--gc-sections" ]
+if __name__ == '__main__':
+    sys.exit(subprocess.call(['sh'] + sys.argv[1:]))
