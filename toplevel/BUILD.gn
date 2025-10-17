@@ -84,10 +84,6 @@ if (board == "raspberry_pico2_cortexm") {
     testonly = true
     deps = [ "//librs:check_librs($libc_toolchain)" ]
   }
-  group("check_adapter") {
-    testonly = true
-    deps = [ "//kernel/adapter:check_adapter($libc_toolchain)" ]
-  }
 
   group("clippy_librs") {
     testonly = true
