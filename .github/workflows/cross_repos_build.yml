@@ -7,3 +7,4 @@ on:
 jobs:
   call_workflow:
     uses: vivoblueos/kernel/.github/workflows/reusable_cross_repos_build.yml@main
+    secrets: inherit
