@@ -27,10 +27,33 @@ declare_args() {
   coverage = false
   profile = false
   rust_sysroot = ""
+  use_cmsis_adapter = false
+}
+if (board != "none") {
+  kconfig_args = [
+    "--kconfig",
+    rebase_path("//kernel/kconfig/config/Kconfig"),
+    "--board",
+    "$board",
+    "--build_type",
+    "$build_type",
+  ]
+  parse_configs = rebase_path("//kernel/kconfig/src/parse_rustflags.py")
+  kernel_configs = exec_script(parse_configs, kconfig_args, "list lines")
+  foreach(item, kernel_configs) {
+    if (item == "cmsis_rtos2_adapter" || item == "cmsis_rtos1_adapter") {
+      use_cmsis_adapter = true
+    }
+  }
+} else {
+  kernel_configs = []
 }
 
 host_toolchain = "//build/toolchain:host"
-sysroot_path = rebase_path("//external/newlib/newlib/libc")
+
+# It should be overrided by board's toolchain.
+sysroot_path = ""
+
 if (board == "qemu_mps3_an547") {
   set_default_toolchain("//build/toolchain:blueos_thumbv8m")
   llvm_target = "thumbv8m.main-none-eabihf"
@@ -40,6 +63,9 @@ if (board == "qemu_mps3_an547") {
   librs_linux_emulation_toolchain =
       "//build/toolchain:librs_linux_emulation_thumbv8m"
   kernel_toolchain = "//build/toolchain:blueos_thumbv8m"
+  sysroot_path = exec_script("//build/scripts/get_sysroot.py",
+                             [ "arm-none-eabi-gcc" ],
+                             "string")
 } else if (board == "qemu_mps2_an385") {
   llvm_target = "thumbv7m-none-eabi"
   set_default_toolchain("//build/toolchain:blueos_thumbv7m")
@@ -49,6 +75,9 @@ if (board == "qemu_mps3_an547") {
   kernel_toolchain = "//build/toolchain:blueos_thumbv7m"
   librs_linux_emulation_toolchain =
       "//build/toolchain:librs_linux_emulation_thumbv7m"
+  sysroot_path = exec_script("//build/scripts/get_sysroot.py",
+                             [ "arm-none-eabi-gcc" ],
+                             "string")
 } else if (board == "qemu_virt64_aarch64") {
   llvm_target = "aarch64-unknown-none"
   set_default_toolchain("//build/toolchain:blueos_aarch64")
