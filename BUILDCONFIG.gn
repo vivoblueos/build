@@ -27,6 +27,7 @@ declare_args() {
   coverage = false
   profile = false
   rust_sysroot = ""
+  use_net = false
   use_cmsis_adapter = false
 }
 if (board != "none") {
@@ -43,6 +44,8 @@ if (board != "none") {
   foreach(item, kernel_configs) {
     if (item == "cmsis_rtos2_adapter" || item == "cmsis_rtos1_adapter") {
       use_cmsis_adapter = true
+    } else if (item == "enable_net") {
+      use_net = true
     }
   }
 } else {
