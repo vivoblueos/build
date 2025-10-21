@@ -96,6 +96,14 @@ if (board == "qemu_mps3_an547") {
   machine = "virt"
   libc_toolchain = "//build/toolchain:blueos_riscv64"
   kernel_toolchain = "//build/toolchain:blueos_riscv64"
+} else if (board == "qemu_riscv32") {
+  llvm_target = "riscv32"
+
+  set_default_toolchain("//build/toolchain:blueos_riscv32imc")
+  qemu_exe = "qemu-system-riscv32"
+  machine = "virt"
+  libc_toolchain = "//build/toolchain:blueos_riscv32imc"
+  kernel_toolchain = "//build/toolchain:blueos_riscv32imc"
 } else if (board == "raspberry_pico2_cortexm") {
   import("//kernel/kernel/src/boards/$board/bsp_info.gni")
 } else {
