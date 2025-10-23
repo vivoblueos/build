@@ -40,6 +40,7 @@ BOARDS = [
     'none',
     'qemu_mps2_an385',
     'qemu_mps3_an547',
+    'qemu_riscv32',
     'qemu_riscv64',
     'qemu_virt64_aarch64',
 ]

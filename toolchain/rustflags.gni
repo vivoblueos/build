@@ -57,11 +57,7 @@ riscv64_rustc_link_args = [
   "-Clink-arg=-mabi=lp64",
   "-Clink-arg=-Wl,-z,norelro",
 ]
-# link args for gcc
-#riscv64_rustc_link_args = [
-#  "-Clinker=riscv64-unknown-elf-gcc",
-#  "-Clink-arg=-march=rv64gc",
-#  "-Clink-arg=-mabi=lp64d",
-#  "-Clink-arg=-Wl,--gc-sections",
-#  "-Clink-arg=-nostdlib",
-#]
+
+riscv32imc_rustc_link_args = [ "-Clinker=riscv-none-elf-gcc" ]
+
+riscv32imac_rustc_link_args = [ "-Clinker=riscv-none-elf-gcc" ]

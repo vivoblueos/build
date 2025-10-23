@@ -188,3 +188,35 @@ blueos_toolchain("host") {
     current_cpu = host_cpu
   }
 }
+
+blueos_toolchain("blueos_riscv32imc") {
+  cc = "clang --target=riscv32 -march=rv32imc "
+  cxx = "clang++ --target=riscv32 -march=rv32imc "
+  ld = cc + " " + string_join(" ", common_ldflags)
+  ar = "llvm-ar"
+  objcopy = "llvm-objcopy"
+  rustc = "rustc --target=riscv32imc-vivo-blueos "
+  clippy_driver = "clippy-driver --target=riscv32imc-vivo-blueos "
+  rustc_link_args =
+      string_join(" ", common_rustc_link_args + riscv32imc_rustc_link_args)
+  toolchain_args = {
+    current_os = "blueos"
+    current_cpu = "riscv32"
+  }
+}
+
+blueos_toolchain("blueos_riscv32imac") {
+  cc = "clang --target=riscv32 -march=rv32imac_zicsr "
+  cxx = "clang++ --target=riscv32 -march=rv32imac_zicsr "
+  ld = cc + " " + string_join(" ", common_ldflags)
+  ar = "llvm-ar"
+  objcopy = "llvm-objcopy"
+  rustc = "rustc --target=riscv32-vivo-blueos "
+  clippy_driver = "clippy-driver --target=riscv32-vivo-blueos "
+  rustc_link_args =
+      string_join(" ", common_rustc_link_args + riscv32imac_rustc_link_args)
+  toolchain_args = {
+    current_os = "blueos"
+    current_cpu = "riscv32"
+  }
+}
