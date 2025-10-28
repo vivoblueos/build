@@ -44,6 +44,7 @@ header: # `header` section is configurations for source codes license header.
       - "LICENSES/**"
       - "CREDITS/**"
       - ".gitignore"
+      - ".gitattributes"
       - "**/*.md"
       - "**/*.x" # ld link script
       - "**/qemu_checker_test_fail.txt"
