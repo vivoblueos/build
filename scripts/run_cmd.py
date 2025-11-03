@@ -24,7 +24,6 @@ import argparse
 LOGGER = logging.getLogger(__name__)
 LOGGER.setLevel(logging.INFO)
 
-
 def main():
     parser = argparse.ArgumentParser(
         description='Run command with optional coverage check')

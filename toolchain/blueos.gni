@@ -269,6 +269,11 @@ template("blueos_toolchain") {
     if (current_os == "mac") {
       link_map_opt = "-Wl,-map,"
     }
+
+    # We support building rust targets with same `crate_name` but different
+    # `target_output_name`. For rust lib targets(.rlib, .a, .so), we output
+    # artifacts as
+    # {{target_output_name}}/lib{{crate_name}}.{{output_extension}}.
     tool("rust_bin") {
       depfile = "{{target_out_dir}}/{{target_output_name}}.d"
       mapfile = "{{target_out_dir}}/{{target_output_name}}.map"
@@ -321,38 +326,32 @@ template("blueos_toolchain") {
       outfile =
           "{{target_out_dir}}/{{target_output_name}}/lib{{crate_name}}.rlib"
       clippy_rspfile = "{{target_out_dir}}/{{target_output_name}}.clippy_rsp"
-      clippy_command = "{{rustenv}} $clippy_driver --crate-name {{crate_name}} {{source}} --crate-type {{crate_type}} {{rustflags}} $rustc_lint_flags $clippy_lint_flags {{rustdeps}} {{externs}} -o ${outfile}.clippy"
-      gen_clippy_rspfile_command =
-          " && echo '${clippy_command}' > ${clippy_rspfile}"
-      rustc_command = "{{rustenv}} $rustc --crate-name {{crate_name}} {{source}} --crate-type {{crate_type}} --emit=dep-info=$depfile,link {{rustflags}} $rustc_lint_flags -o $outfile {{rustdeps}} {{externs}}"
-      command = "${rustc_command} ${gen_clippy_rspfile_command}"
-      description = "RUST $outfile"
-      outputs = [
-        outfile,
-        clippy_rspfile,
-      ]
-    }
 
-    tool("rust_dylib") {
-      if (current_os == "ios" || current_os == "mac") {
-        default_output_extension = ".dylib"
+      base_clippy_command = "{{rustenv}} $clippy_driver --crate-name {{crate_name}} {{source}} --crate-type {{crate_type}} {{rustflags}} $rustc_lint_flags $clippy_lint_flags {{rustdeps}} {{externs}} -o ${outfile}.clippy"
+      base_rustc_command = "{{rustenv}} $rustc --crate-name {{crate_name}} {{source}} --crate-type {{crate_type}} --emit=dep-info=$depfile,link {{rustflags}} $rustc_lint_flags -o $outfile {{rustdeps}} {{externs}}"
+      if (defined(miri_sysroot) &&
+          miri_sysroot != "") {  # if MIRI_SYSROOT is defined, use std with full
+                                 # MIR(but not all rlib if sysroot is generated
+                                 # by "cargo miri setup", because miri doesn't
+                                 # need all rlib, in other words, normal
+                                 # unittest can not run with this sysroot) by
+                                 # adding --sysroot, should unset this env if
+                                 # miri is not used elsewise normal unittest
+                                 # will fail
+        sysroot_arg = " --sysroot " + miri_sysroot
       } else {
-        default_output_extension = ".so"
+        sysroot_arg = ""
       }
-      depfile = "{{target_out_dir}}/{{crate_name}}.d"
-      outfile = "{{output_dir}}/lib{{crate_name}}{{output_extension}}"
-      clippy_rspfile = "{{target_out_dir}}/{{target_output_name}}.clippy_rsp"
-      clippy_command = "{{rustenv}} $clippy_driver --crate-name {{crate_name}} {{source}} --crate-type {{crate_type}} {{rustflags}} $rustc_lint_flags $clippy_lint_flags ${rustc_link_args} {{rustdeps}} {{externs}} -o ${outfile}.clippy"
+      rustc_command = base_rustc_command + sysroot_arg
+      clippy_command = base_clippy_command
       gen_clippy_rspfile_command =
           " && echo '${clippy_command}' > ${clippy_rspfile}"
-      rustc_command = "{{rustenv}} $rustc --crate-name {{crate_name}} {{source}} --crate-type {{crate_type}} --emit=dep-info=$depfile,link {{rustflags}} $rustc_lint_flags ${rustc_link_args} -o $outfile {{rustdeps}} {{externs}}"
       command = "${rustc_command} ${gen_clippy_rspfile_command}"
       description = "RUST $outfile"
       outputs = [
         outfile,
         clippy_rspfile,
       ]
-      default_output_dir = "{{root_out_dir}}/lib"
     }
 
     tool("rust_macro") {

@@ -183,6 +183,8 @@ blueos_toolchain("host") {
   rustc = "rustc"
   clippy_driver = "clippy-driver"
   rustc_link_args = ""
+  miri_sysroot = getenv("MIRI_SYSROOT")  # miri only supports few targets (like
+                                         # host(x86-64))
   toolchain_args = {
     current_os = host_os
     current_cpu = host_cpu
