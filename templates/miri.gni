@@ -1,0 +1,67 @@
+# Copyright (c) 2025 vivo Mobile Communication Co., Ltd.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#       http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# This template offers syntactic sugar for rust_library, rust_proc_macro target.
+
+template("miri_test") {
+  action(target_name) {
+    testonly = true
+    script = "//build/scripts/miri/run_miri.py"
+    outputs = [ "$target_gen_dir/miri_test.stamp" ]
+
+    deps = []
+    if (defined(invoker.deps)) {
+      deps += invoker.deps
+    }
+
+    meta_args = []
+    meta_label = get_label_info(":$target_name", "label_no_toolchain")
+    meta_args += [ meta_label ]  # target label
+    meta_args += [ rebase_path(root_build_dir, "//") ]  # output dir
+    meta_args += [ rebase_path("//") ]  # fixed cwd in .py
+
+    miri_flags = []
+    if (defined(invoker.extra_miri_flags)) {
+      miri_flags += invoker.extra_miri_flags
+    }
+
+    test_args = []
+    if (defined(invoker.test_name) && invoker.test_name != "") {
+      test_args += [ invoker.test_name ]
+    }
+
+    miri_args = []
+    miri_sysroot =
+        getenv("MIRI_SYSROOT")  # need to set this env on your own. note: miri
+                                # needs std with full MIR which can be compiled
+                                # with -Zalways-encode-mir flag
+    if (miri_sysroot != "") {
+      miri_args += [
+        "--sysroot",
+        miri_sysroot,
+      ]
+    }
+
+    args = []
+    args += meta_args
+    args += miri_flags
+    args += [ rebase_path(invoker.crate, "//") ]
+    args += miri_args
+    args += [
+      "--",
+      "--nocapture",
+    ]
+    args += test_args
+  }
+}

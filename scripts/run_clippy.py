@@ -16,6 +16,13 @@
 
 import sys
 import subprocess
+import os
 
 if __name__ == '__main__':
-    sys.exit(subprocess.call(['sh'] + sys.argv[1:]))
+    rc = subprocess.call(['sh'] + sys.argv[1:])
+    if rc != 0:
+        sys.exit(rc)
+    rspfile = sys.argv[1]
+    prefix, _ = os.path.splitext(rspfile)
+    with open(prefix + '.stamp', 'w') as f:
+        pass

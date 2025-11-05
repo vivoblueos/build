@@ -27,12 +27,9 @@ _clippy_lint_flags = [
   "clippy::non_minimal_cfg",
   "-A",
   "clippy::unnecessary_cast",
+  "-A",
+  "clippy::arc_with_non_send_sync",
 ]
-
-# TODO: also available on other boards
-if (board != "qemu_riscv64") {
-  _clippy_lint_flags += [ "--cap-lints=allow" ]
-}
 
 clippy_lint_flags = string_join(" ", _clippy_lint_flags)
 

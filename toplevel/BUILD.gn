@@ -109,7 +109,6 @@ if (board == "raspberry_pico2_cortexm") {
       ]
     }
   }
-
   group("check_loader") {
     testonly = true
     deps = [ "//kernel/loader:check_loader($libc_toolchain)" ]
@@ -133,13 +132,24 @@ if (board == "raspberry_pico2_cortexm") {
     testonly = true
     deps = [
       ":check_infra",
+      ":clippy_all",
       "//build/tests:tests($host_toolchain)",
     ]
+  }
+
+  group("clippy_all") {
+    testonly = true
+    deps = [ ":clippy_infra" ]
   }
 
   group("check_infra") {
     testonly = true
     deps = [ "//kernel/infra:check_infra($host_toolchain)" ]
+  }
+
+  group("clippy_infra") {
+    testonly = true
+    deps = [ "//kernel/infra:check_infra_by_clippy($host_toolchain)" ]
   }
 }
 
