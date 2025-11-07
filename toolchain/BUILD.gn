@@ -1,50 +1,46 @@
 # Copyright (c) 2025 vivo Mobile Communication Co., Ltd.
 #
-# Licensed under the Apache License, Version 2.0 (the "License");
+# Licensed under the Apache License, Version 2.0 (the"License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
 #       http://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
+# distributed under the License is distributed on an"AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
 import("//build/toolchain/blueos.gni")
-import("//build/toolchain/cflags.gni")
-import("//build/toolchain/rustflags.gni")
 
+# For consistency, we don't use lld or ld directly. All link processes are
+# driven by clang or gcc, even we are using rustc to build executables.
 blueos_toolchain("blueos_riscv64") {
-  cc = "clang --target=riscv64 " + string_join(" ", riscv64_cflags)
-  cxx = "clang++ --target=riscv64 " + string_join(" ", riscv64_cflags)
-  ld = cc + " " + string_join(" ", riscv64_cflags + common_ldflags)
+  cc = "clang --target=riscv64"
+  cxx = "clang++ --target=riscv64"
+  ld = cc
   ar = "llvm-ar"
   objcopy = "llvm-objcopy"
-  rustc = "rustc --target=riscv64-vivo-blueos "
-  clippy_driver = "clippy-driver --target=riscv64-vivo-blueos "
-  rustc_link_args =
-      string_join(" ", common_rustc_link_args + riscv64_rustc_link_args)
+  rustc = "rustc --target=riscv64-vivo-blueos"
+  clippy_driver = "clippy-driver --target=riscv64-vivo-blueos"
   toolchain_args = {
     current_os = "blueos"
     current_cpu = "riscv64"
   }
 }
 
+# We still keep toolchains without the `blueos_` prefix since `blueos_*` toolchains
+# are using different relocation models in their default configuration.
 blueos_toolchain("thumbv7m") {
   target = "thumbv7m-none-eabi"
-  cc = "clang --target=$target --sysroot ${sysroot_path} " +
-       string_join(" ", thumbv7m_cflags)
-  cxx = "clang++ --target=$target --sysroot ${sysroot_path} " +
-        string_join(" ", thumbv7m_cflags)
-  ld = "arm-none-eabi-gcc " + string_join(" ", common_ldflags)
+  cc = "clang --target=${target}"
+  cxx = "clang++ --target=${target}"
+  ld = "arm-none-eabi-gcc"
   ar = "llvm-ar"
   objcopy = "llvm-objcopy"
-  rustc = "rustc --target=$target"
-  clippy_driver = "clippy-driver --target=$target"
-  rustc_link_args =
-      string_join(" ", common_rustc_link_args + thumbv7m_rustc_link_args)
+  rustc = "rustc --target=${target}"
+  clippy_driver = "clippy-driver --target=${target}"
   toolchain_args = {
     current_os = "none"
     current_cpu = "arm"
@@ -53,17 +49,13 @@ blueos_toolchain("thumbv7m") {
 
 blueos_toolchain("blueos_thumbv7m") {
   target = "thumbv7m-none-eabi"
-  cc = "clang --target=$target --sysroot ${sysroot_path} " +
-       string_join(" ", thumbv7m_cflags)
-  cxx = "clang++ --target=$target --sysroot ${sysroot_path} " +
-        string_join(" ", thumbv7m_cflags)
-  ld = "arm-none-eabi-gcc " + string_join(" ", common_ldflags)
+  cc = "clang --target=${target}"
+  cxx = "clang++ --target=${target}"
+  ld = "arm-none-eabi-gcc"
   ar = "llvm-ar"
   objcopy = "llvm-objcopy"
   rustc = "rustc --target=thumbv7m-vivo-blueos-newlibeabi"
   clippy_driver = "clippy-driver --target=thumbv7m-vivo-blueos-newlibeabi"
-  rustc_link_args =
-      string_join(" ", common_rustc_link_args + thumbv7m_rustc_link_args)
   toolchain_args = {
     current_os = "blueos"
     current_cpu = "arm"
@@ -72,17 +64,13 @@ blueos_toolchain("blueos_thumbv7m") {
 
 blueos_toolchain("thumbv8m") {
   target = "thumbv8m.main-none-eabihf"
-  cc = "clang --target=$target --sysroot ${sysroot_path} " +
-       string_join(" ", thumbv8m_cflags)
-  cxx = "clang++ --target=$target --sysroot ${sysroot_path} " +
-        string_join(" ", thumbv8m_cflags)
-  ld = "arm-none-eabi-gcc " + string_join(" ", common_ldflags)
+  cc = "clang --target=${target}"
+  cxx = "clang++ --target=${target}"
+  ld = "arm-none-eabi-gcc"
   ar = "llvm-ar"
   objcopy = "llvm-objcopy"
-  rustc = "rustc --target=$target"
-  clippy_driver = "clippy-driver --target=$target"
-  rustc_link_args =
-      string_join(" ", common_rustc_link_args + thumbv8m_rustc_link_args)
+  rustc = "rustc --target=${target}"
+  clippy_driver = "clippy-driver --target=${target}"
   toolchain_args = {
     current_os = "none"
     current_cpu = "arm"
@@ -91,18 +79,14 @@ blueos_toolchain("thumbv8m") {
 
 blueos_toolchain("blueos_thumbv8m") {
   target = "thumbv8m.main-none-eabihf"
-  cc = "clang --target=$target --sysroot ${sysroot_path} " +
-       string_join(" ", thumbv8m_cflags)
-  cxx = "clang++ --target=$target --sysroot ${sysroot_path} " +
-        string_join(" ", thumbv8m_cflags)
-  ld = "arm-none-eabi-gcc " + string_join(" ", common_ldflags)
+  cc = "clang --target=${target}"
+  cxx = "clang++ --target=${target}"
+  ld = "arm-none-eabi-gcc"
   ar = "llvm-ar"
   objcopy = "llvm-objcopy"
   rustc = "rustc --target=thumbv8m.main-vivo-blueos-newlibeabihf"
   clippy_driver =
       "clippy-driver --target=thumbv8m.main-vivo-blueos-newlibeabihf"
-  rustc_link_args =
-      string_join(" ", common_rustc_link_args + thumbv8m_rustc_link_args)
   toolchain_args = {
     current_os = "blueos"
     current_cpu = "arm"
@@ -110,15 +94,13 @@ blueos_toolchain("blueos_thumbv8m") {
 }
 
 blueos_toolchain("aarch64") {
-  cc = "aarch64-none-elf-gcc " + string_join(" ", aarch64_cflags)
-  cxx = "aarch64-none-elf-g++ " + string_join(" ", aarch64_cflags)
-  ld = cc + " " + string_join(" ", common_ldflags)
+  cc = "aarch64-none-elf-gcc"
+  cxx = "aarch64-none-elf-g++"
+  ld = cc
   ar = "aarch64-none-elf-ar"
   objcopy = "aarch64-none-elf-objcopy"
   rustc = "rustc --target=aarch64-unknown-none"
   clippy_driver = "clippy-driver --target=aarch64-unknown-none"
-  rustc_link_args =
-      string_join(" ", common_rustc_link_args + aarch64_rustc_link_args)
   toolchain_args = {
     current_os = "blueos"
     current_cpu = "aarch64"
@@ -126,15 +108,13 @@ blueos_toolchain("aarch64") {
 }
 
 blueos_toolchain("blueos_aarch64") {
-  cc = "aarch64-none-elf-gcc " + string_join(" ", aarch64_cflags)
-  cxx = "aarch64-none-elf-g++ " + string_join(" ", aarch64_cflags)
-  ld = cc + " " + string_join(" ", common_ldflags)
+  cc = "aarch64-none-elf-gcc"
+  cxx = "aarch64-none-elf-g++"
+  ld = cc
   ar = "aarch64-none-elf-ar"
   objcopy = "aarch64-none-elf-objcopy"
   rustc = "rustc --target=aarch64-vivo-blueos-newlib"
   clippy_driver = "clippy-driver --target=aarch64-vivo-blueos-newlib"
-  rustc_link_args =
-      string_join(" ", common_rustc_link_args + aarch64_rustc_link_args)
   toolchain_args = {
     current_os = "blueos"
     current_cpu = "aarch64"
@@ -142,16 +122,14 @@ blueos_toolchain("blueos_aarch64") {
 }
 
 blueos_toolchain("librs_linux_emulation_thumbv8m") {
-  cc = "arm-none-eabi-gcc "
-  cxx = "arm-none-eabi-g++ "
-  ld = "arm-none-eabi-gcc "
-  ar = "arm-none-eabi-ar "
-  objcopy = "arm-none-eabi-objcopy "
+  cc = "arm-none-eabi-gcc"
+  cxx = "arm-none-eabi-g++"
+  ld = "arm-none-eabi-gcc"
+  ar = "arm-none-eabi-ar"
+  objcopy = "arm-none-eabi-objcopy"
   rustc = "rustc --target=thumbv8m.main-vivo-blueos-newlibeabihf"
   clippy_driver =
       "clippy-driver --target=thumbv8m.main-vivo-blueos-newlibeabihf"
-  rustc_link_args =
-      string_join(" ", common_rustc_link_args + thumbv8m_rustc_link_args)
   toolchain_args = {
     current_os = "blueos"
     current_cpu = "arm"
@@ -159,15 +137,13 @@ blueos_toolchain("librs_linux_emulation_thumbv8m") {
 }
 
 blueos_toolchain("librs_linux_emulation_thumbv7m") {
-  cc = "arm-none-eabi-gcc "
-  cxx = "arm-none-eabi-g++ "
-  ld = "arm-none-eabi-gcc "
-  ar = "arm-none-eabi-ar "
-  objcopy = "arm-none-eabi-objcopy "
+  cc = "arm-none-eabi-gcc"
+  cxx = "arm-none-eabi-g++"
+  ld = "arm-none-eabi-gcc"
+  ar = "arm-none-eabi-ar"
+  objcopy = "arm-none-eabi-objcopy"
   rustc = "rustc --target=thumbv7m-vivo-blueos-newlibeabi"
   clippy_driver = "clippy-driver --target=thumbv7m-vivo-blueos-newlibeabi"
-  rustc_link_args =
-      string_join(" ", common_rustc_link_args + thumbv7m_rustc_link_args)
   toolchain_args = {
     current_os = "blueos"
     current_cpu = "arm"
@@ -182,9 +158,9 @@ blueos_toolchain("host") {
   objcopy = "llvm-objcopy"
   rustc = "rustc"
   clippy_driver = "clippy-driver"
-  rustc_link_args = ""
-  miri_sysroot = getenv("MIRI_SYSROOT")  # miri only supports few targets (like
-                                         # host(x86-64))
+
+  # miri only supports few targets (like x86_64 and aarch64).
+  miri_sysroot = getenv("MIRI_SYSROOT")
   toolchain_args = {
     current_os = host_os
     current_cpu = host_cpu
@@ -192,15 +168,13 @@ blueos_toolchain("host") {
 }
 
 blueos_toolchain("blueos_riscv32imc") {
-  cc = "clang --target=riscv32 -march=rv32imc "
-  cxx = "clang++ --target=riscv32 -march=rv32imc "
-  ld = cc + " " + string_join(" ", common_ldflags)
+  cc = "clang --target=riscv32 -march=rv32imc"
+  cxx = "clang++ --target=riscv32 -march=rv32imc"
+  ld = cc
   ar = "llvm-ar"
   objcopy = "llvm-objcopy"
-  rustc = "rustc --target=riscv32imc-vivo-blueos "
-  clippy_driver = "clippy-driver --target=riscv32imc-vivo-blueos "
-  rustc_link_args =
-      string_join(" ", common_rustc_link_args + riscv32imc_rustc_link_args)
+  rustc = "rustc --target=riscv32imc-vivo-blueos"
+  clippy_driver = "clippy-driver --target=riscv32imc-vivo-blueos"
   toolchain_args = {
     current_os = "blueos"
     current_cpu = "riscv32"
@@ -208,15 +182,13 @@ blueos_toolchain("blueos_riscv32imc") {
 }
 
 blueos_toolchain("blueos_riscv32imac") {
-  cc = "clang --target=riscv32 -march=rv32imac_zicsr "
-  cxx = "clang++ --target=riscv32 -march=rv32imac_zicsr "
-  ld = cc + " " + string_join(" ", common_ldflags)
+  cc = "clang --target=riscv32 -march=rv32imac_zicsr"
+  cxx = "clang++ --target=riscv32 -march=rv32imac_zicsr"
+  ld = cc
   ar = "llvm-ar"
   objcopy = "llvm-objcopy"
-  rustc = "rustc --target=riscv32-vivo-blueos "
-  clippy_driver = "clippy-driver --target=riscv32-vivo-blueos "
-  rustc_link_args =
-      string_join(" ", common_rustc_link_args + riscv32imac_rustc_link_args)
+  rustc = "rustc --target=riscv32-vivo-blueos"
+  clippy_driver = "clippy-driver --target=riscv32-vivo-blueos"
   toolchain_args = {
     current_os = "blueos"
     current_cpu = "riscv32"

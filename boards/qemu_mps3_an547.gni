@@ -12,20 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-template("bindgen") {
-  action(target_name) {
-    forward_variables_from(invoker, "*", [ "crate_name" ])
-    script = "//build/scripts/run_bindgen.py"
-    output = "$target_out_dir/${target_name}.rs"
-    outputs = [ output ]
-    args = bindgen_flags + rebase_path(sources) + [
-             "-o",
-             rebase_path(output),
-             "--",
-           ]
-    args += [
-      "{{cflags}}",
-      "{{include_dirs}}",
-    ]
-  }
-}
+board_default_toolchain = "//build/toolchain:blueos_thumbv8m"
+qemu_exe = "qemu-system-arm"
+machine = "mps3-an547"
+qemu_extra_args = []
+qemu_net_args = []
+qemu_block_args = []
+board_deps = [ "//external/cortex-m/v0.7.7:cortex_m" ]

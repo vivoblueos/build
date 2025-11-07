@@ -12,35 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-_clippy_lint_flags = [
-  "-A",
-  "clippy::missing_safety_doc",
-  "-A",
-  "clippy::mut_from_ref",
-  "-A",
-  "clippy::not_unsafe_ptr_arg_deref",
-  "-A",
-  "clippy::too_many_arguments",
-  "-A",
-  "clippy::new_without_default",
-  "-A",
-  "clippy::non_minimal_cfg",
-  "-A",
-  "clippy::unnecessary_cast",
-  "-A",
-  "clippy::arc_with_non_send_sync",
+board_default_toolchain = "//build/toolchain:blueos_thumbv7m"
+qemu_exe = "qemu-system-arm"
+machine = "mps2-an385"
+qemu_extra_args = []
+qemu_net_args = []
+qemu_block_args = []
+board_deps = [
+  "//external/cortex-m/v0.7.7:cortex_m",
+  "//external/smoltcp/v0.12.0:smoltcp",
 ]
-
-clippy_lint_flags = string_join(" ", _clippy_lint_flags)
-
-_rustc_lint_flags = [
-  "-D",
-  "warnings",
-  "-A",
-  "unused",
-  "-A",
-  "dead_code",
-  "-A",
-  "static_mut_refs",
-]
-rustc_lint_flags = string_join(" ", _rustc_lint_flags)
