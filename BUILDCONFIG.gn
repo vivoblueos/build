@@ -29,6 +29,7 @@ declare_args() {
   rust_sysroot = ""
   use_net = false
   use_cmsis_adapter = false
+  update_crates = false
 }
 if (board != "none") {
   kconfig_args = [
