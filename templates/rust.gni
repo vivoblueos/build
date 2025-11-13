@@ -41,6 +41,7 @@ template("build_rust") {
                            "crate_type",
                            "testonly",
                            "public_deps",
+                           "aliased_deps",
                          ],
                          [ "configs" ])
 
