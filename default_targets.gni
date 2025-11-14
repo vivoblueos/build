@@ -13,7 +13,12 @@
 # limitations under the License.
 
 if (coverage || profile) {
-  check_all_on_virtual_board = [ "//kernel/kernel:check_kernel" ]
+  check_all_on_virtual_board = [
+    "//kernel/adapter:check_adapter",
+    "//kernel/kernel:check_kernel",
+    "//kernel/rsrt:check_rsrt",
+    "//librs:check_librs",
+  ]
   clippy_all_on_virtual_board = []
 } else {
   check_all_on_virtual_board = [
