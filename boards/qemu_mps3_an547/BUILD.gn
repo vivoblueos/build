@@ -58,6 +58,10 @@ blueos_board("qemu_mps3_an547") {
   }
   app_config = {
   }
-  default = []
-  check_all = check_all_on_virtual_board + clippy_all_on_virtual_board
+  default = [
+    "//apps/example:check_apps",
+    "//apps/shell:shell_runner",
+  ]
+  check_all = check_all_on_virtual_board + clippy_all_on_virtual_board +
+              [ "//apps/example:check_apps" ]
 }
