@@ -12,20 +12,31 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-template("bindgen") {
-  action(target_name) {
-    forward_variables_from(invoker, "*", [ "crate_name" ])
-    script = "//build/scripts/run_bindgen.py"
-    output = "$target_out_dir/${target_name}.rs"
-    outputs = [ output ]
-    args = bindgen_flags + rebase_path(sources) + [
-             "-o",
-             rebase_path(output),
-             "--",
-           ]
-    args += [
-      "{{cflags}}",
-      "{{include_dirs}}",
-    ]
-  }
+declare_args() {
+  chip = "rp2350"
+  use_defmt = false
+  use_defmt_test = false
+}
+
+board_default_toolchain = "//build/toolchain:blueos_thumbv8m"
+qemu_exe = ""
+machine = ""
+qemu_extra_args = []
+qemu_net_args = []
+qemu_block_args = []
+board_deps = [
+  "//external/cortex-m/v0.7.7:cortex_m",
+  "//external/embedded-hal/v1.0.0:embedded_hal",
+  "//external/smoltcp/v0.12.0:smoltcp",
+]
+
+if (use_defmt) {
+  board_deps += [
+    "//external/defmt/v1.0.1:defmt",
+    "//external/defmt_rtt/v1.0.0:defmt_rtt",
+  ]
+}
+
+if (use_defmt_test) {
+  board_deps += [ "//external/defmt_test/v0.4.0:defmt_test" ]
 }

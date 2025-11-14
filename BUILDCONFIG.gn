@@ -22,138 +22,43 @@ declare_args() {
   # in https://gn.googlesource.com/gn/+/main/docs/reference.md#var_target_os,
   # GN doesn't use target_cpu & target_os internally either, so it
   # should be safe for us to use "board" to make build decision.
-  board = "qemu_mps3_an547"
-  direct_syscall_handler = true
-  coverage = false
-  profile = false
-  rust_sysroot = ""
-  use_net = false
-  use_cmsis_adapter = false
-}
-if (board != "none") {
-  kconfig_args = [
-    "--kconfig",
-    rebase_path("//kernel/kconfig/config/Kconfig"),
-    "--board",
-    "$board",
-    "--build_type",
-    "$build_type",
-  ]
-  parse_configs = rebase_path("//kernel/kconfig/src/parse_rustflags.py")
-  kernel_configs = exec_script(parse_configs, kconfig_args, "list lines")
-  foreach(item, kernel_configs) {
-    if (item == "cmsis_rtos2_adapter" || item == "cmsis_rtos1_adapter") {
-      use_cmsis_adapter = true
-    } else if (item == "enable_net") {
-      use_net = true
-    }
-  }
-} else {
-  kernel_configs = []
+  board = "none"
 }
 
-host_toolchain = "//build/toolchain:host"
+# Define boolean flags for convenience.
+coverage = "${build_type}" == "coverage"
+profile = "${build_type}" == "profile"
+release = "${build_type}" == "release"
+debug = "${build_type}" == "debug"
+profile = "${build_type}" == "profile"
 
-# It should be overrided by board's toolchain.
-sysroot_path = ""
+import("//build/boards/${board}.gni")
 
-if (board == "qemu_mps3_an547") {
-  set_default_toolchain("//build/toolchain:blueos_thumbv8m")
-  llvm_target = "thumbv8m.main-none-eabihf"
-  qemu_exe = "qemu-system-arm"
-  machine = "mps3-an547"
-  libc_toolchain = "//build/toolchain:blueos_thumbv8m"
-  librs_linux_emulation_toolchain =
-      "//build/toolchain:librs_linux_emulation_thumbv8m"
-  kernel_toolchain = "//build/toolchain:blueos_thumbv8m"
-  sysroot_path = exec_script("//build/scripts/get_sysroot.py",
-                             [ "arm-none-eabi-gcc" ],
-                             "string")
-} else if (board == "qemu_mps2_an385") {
-  llvm_target = "thumbv7m-none-eabi"
-  set_default_toolchain("//build/toolchain:blueos_thumbv7m")
-  qemu_exe = "qemu-system-arm"
-  machine = "mps2-an385"
-  libc_toolchain = "//build/toolchain:blueos_thumbv7m"
-  kernel_toolchain = "//build/toolchain:blueos_thumbv7m"
-  librs_linux_emulation_toolchain =
-      "//build/toolchain:librs_linux_emulation_thumbv7m"
-  sysroot_path = exec_script("//build/scripts/get_sysroot.py",
-                             [ "arm-none-eabi-gcc" ],
-                             "string")
-} else if (board == "qemu_virt64_aarch64") {
-  llvm_target = "aarch64-unknown-none"
-  set_default_toolchain("//build/toolchain:blueos_aarch64")
-  qemu_exe = "qemu-system-aarch64"
-  machine = "virt,virtualization=on,gic-version=3"
-  libc_toolchain = "//build/toolchain:blueos_aarch64"
-  kernel_toolchain = "//build/toolchain:blueos_aarch64"
-  librs_linux_emulation_toolchain = "//build/toolchain:blueos_aarch64"
-} else if (board == "qemu_riscv64") {
-  llvm_target = "riscv64"
-  set_default_toolchain("//build/toolchain:blueos_riscv64")
-  qemu_exe = "qemu-system-riscv64"
-  machine = "virt"
-  libc_toolchain = "//build/toolchain:blueos_riscv64"
-  kernel_toolchain = "//build/toolchain:blueos_riscv64"
-} else if (board == "qemu_riscv32") {
-  llvm_target = "riscv32"
+# Check if the ${board}.gni is valid.
+assert(defined(board_default_toolchain))
 
-  set_default_toolchain("//build/toolchain:blueos_riscv32imc")
-  qemu_exe = "qemu-system-riscv32"
-  machine = "virt"
-  libc_toolchain = "//build/toolchain:blueos_riscv32imc"
-  kernel_toolchain = "//build/toolchain:blueos_riscv32imc"
-} else if (board == "raspberry_pico2_cortexm") {
-  import("//kernel/kernel/src/boards/$board/bsp_info.gni")
-} else {
-  set_default_toolchain("//build/toolchain:host")
-  libc_toolchain = "//build/toolchain:host"
-  kernel_toolchain = "//build/toolchain:host"
-  librs_linux_emulation_toolchain = "//build/toolchain:host"
-
-  # FIXME: Support mac on X86 and linux on aarch64.
-  if (host_os == "linux") {
-    llvm_target = "x86_64-unknown-linux-gnu"
-    qemu_exe = "qemu-system-x86"
-  } else if (host_os == "mac") {
-    llvm_target = "aarch64-apple-darwin"
-    qemu_exe = "qemu-system-arm"
-  }
-}
-
-if (build_type == "debug") {
-  default_config = "//build/config:debug"
-} else if (build_type == "coverage") {
-  default_config = "//build/config:coverage"
-  coverage = true
-} else if (build_type == "profile") {
-  default_config = "//build/config:profile"
-  profile = true
-} else {
-  default_config = "//build/config:release"
-}
-
-set_defaults("rust_proc_macro") {
-  configs = [ default_config ]
-}
-
-set_defaults("rust_library") {
-  configs = [ default_config ]
-}
-
-set_defaults("static_library") {
-  configs = [ default_config ]
-}
-
+set_default_toolchain(board_default_toolchain)
 set_defaults("source_set") {
-  configs = [ default_config ]
+  configs = [ "//build/config:${build_type}" ]
 }
-
+set_defaults("static_library") {
+  configs = [ "//build/config:${build_type}" ]
+}
+set_defaults("shared_library") {
+  configs = [ "//build/config:${build_type}" ]
+}
 set_defaults("executable") {
-  configs = [ default_config ]
+  configs = [ "//build/config:${build_type}" ]
 }
-
+set_defaults("rust_library") {
+  configs = [ "//build/config:${build_type}" ]
+}
+set_defaults("rust_proc_macro") {
+  configs = [ "//build/config:${build_type}" ]
+}
 set_defaults("build_rust") {
-  configs = [ default_config ]
+  configs = [ "//build/config:${build_type}" ]
+}
+set_defaults("bindgen") {
+  configs = [ "//build/config:${build_type}" ]
 }

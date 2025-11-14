@@ -12,20 +12,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-template("bindgen") {
-  action(target_name) {
-    forward_variables_from(invoker, "*", [ "crate_name" ])
-    script = "//build/scripts/run_bindgen.py"
-    output = "$target_out_dir/${target_name}.rs"
-    outputs = [ output ]
-    args = bindgen_flags + rebase_path(sources) + [
-             "-o",
-             rebase_path(output),
-             "--",
-           ]
-    args += [
-      "{{cflags}}",
-      "{{include_dirs}}",
-    ]
+import("//build/templates/board.gni")
+
+blueos_board("none") {
+  kernel_config = {
   }
+  app_config = {
+  }
+  default = []
+  check_all = [
+    "//kernel/infra:check_infra",
+    "//kernel/infra:check_infra_by_clippy",
+  ]
 }

@@ -17,11 +17,19 @@ _common_cflags = [
   "-fdata-sections",
 ]
 
-_common_rustflags = [ "--color=always" ]
+_common_rustflags = [
+  "--color=always",
 
-if (board != "none" && (build_type == "coverage" || build_type == "profile")) {
-  _common_rustflags += [ "-Zno-profiler-runtime" ]
-}
+  #FIXME: We should remove these flags in the future.
+  "-D",
+  "warnings",
+  "-A",
+  "unused",
+  "-A",
+  "dead_code",
+  "-A",
+  "static_mut_refs",
+]
 
 config("release") {
   cflags = [
@@ -36,8 +44,6 @@ config("release") {
   rustflags = [
                 "-Copt-level=z",
                 "-Cstrip=debuginfo",
-                "--cfg",
-                "release",
               ] + _common_rustflags
 }
 
@@ -53,15 +59,8 @@ config("debug") {
   rustflags = [
                 "-Copt-level=1",
                 "-Cforce-frame-pointers=yes",
-                "-Cdebug_assertions",
-                "--cfg",
-                "debug",
+                "-Cdebug-assertions",
               ] + _common_rustflags
-  if (board == "qemu_mps3_an547" || board == "raspberry_pico2_cortexm") {
-    rustflags += [ "-Cdebuginfo=limited" ]
-  } else {
-    rustflags += [ "-Cdebuginfo=full" ]
-  }
 }
 
 config("coverage") {
@@ -71,7 +70,6 @@ config("coverage") {
              "-gdwarf-4",
              "-fno-omit-frame-pointer",
              "-fdiagnostics-color=always",
-             "-fshort-enums",
            ] + _common_cflags
   cflags_c = [ "-std=c11" ]
   rustflags = [
@@ -79,10 +77,7 @@ config("coverage") {
                 "-Cdebuginfo=full",
                 "-Cforce-frame-pointers=yes",
                 "-Cinstrument-coverage",
-                "--cfg",
-                "coverage",
-                "--cfg",
-                "debug",
+                "-Zno-profiler-runtime",
               ] + _common_rustflags
 }
 
@@ -100,5 +95,6 @@ config("profile") {
                 "-Cdebuginfo=full",
                 "-Cforce-frame-pointers=yes",
                 "-Cprofile-generate",
+                "-Zno-profiler-runtime",
               ] + _common_rustflags
 }
