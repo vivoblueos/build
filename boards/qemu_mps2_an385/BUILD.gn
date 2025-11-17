@@ -35,6 +35,7 @@ blueos_board("qemu_mps2_an385") {
       "-nostartfiles",
       "-Wl,-gc-sections",
       "-Wl,-T" + rebase_path(_linker_script),
+      "-Wl,-z,norelro",
     ]
     rustflags = [
       "--cfg",
