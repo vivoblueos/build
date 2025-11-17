@@ -12,171 +12,34 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import("//build/toolchain/blueos.gni")
-
-if (board == "raspberry_pico2_cortexm") {
-  group("default") {
-    deps = []
-  }
-
-  group("build_apps") {
-    deps = [ "//apps/example:check_apps($libc_toolchain)" ]
-  }
-
-  group("check_kernel") {
-    testonly = true
-    deps = [ "//kernel/kernel:check_kernel_probe($libc_toolchain)" ]
-  }
-} else if (board != "none") {
-  group("default") {
-    deps = []
-  }
-
-  group("check_all") {
-    testonly = true
-    deps = [
-      ":check_adapter",
-      ":check_kernel",
-      ":check_librs",
-      ":check_loader",
-      ":check_rsrt",
-      ":check_shell",
-      ":clippy_all",
-    ]
-  }
-
-  group("clippy_all") {
-    testonly = true
-    deps = [
-      ":clippy_adapter",
-      ":clippy_kernel",
-      ":clippy_librs",
-      ":clippy_loader",
-      ":clippy_rsrt",
-    ]
-  }
-
-  group("check_shell") {
-    testonly = true
-    deps = [ "//apps/shell:shell($libc_toolchain)" ]
-  }
-
-  group("check_rsrt") {
-    testonly = true
-    deps = [ "kernel/rsrt:check_rsrt($libc_toolchain)" ]
-  }
-
-  group("clippy_rsrt") {
-    deps = [ "//kernel/rsrt:check_rsrt_by_clippy($libc_toolchain)" ]
-  }
-
-  group("check_kernel") {
-    testonly = true
-    deps = [ "//kernel/kernel:check_kernel($kernel_toolchain)" ]
-  }
-
-  group("clippy_kernel") {
-    testonly = true
-    deps = [ "//kernel/kernel:check_kernel_by_clippy($kernel_toolchain)" ]
-  }
-
-  group("check_librs") {
-    testonly = true
-    deps = [ "//librs:check_librs($libc_toolchain)" ]
-  }
-
-  group("clippy_librs") {
-    testonly = true
-    deps = [ "//librs:check_librs_by_clippy($libc_toolchain)" ]
-  }
-
-  group("check_adapter") {
-    testonly = true
-    deps = [ "//kernel/adapter:check_adapter($libc_toolchain)" ]
-  }
-
-  group("clippy_adapter") {
-    testonly = true
-    deps = [ "//kernel/adapter:check_adapter_by_clippy($libc_toolchain)" ]
-  }
-
-  # only tested librs+qemu-user on arm cortex-m now
-  if (board == "qemu_mps3_an547" || board == "qemu_mps2_an385") {
-    group("check_librs_linux_emulation") {
-      testonly = true
-      deps = [
-        "//librs:check_librs_linux_emulation($librs_linux_emulation_toolchain)",
-      ]
-    }
-  }
-  group("check_loader") {
-    testonly = true
-    deps = [ "//kernel/loader:check_loader($libc_toolchain)" ]
-  }
-
-  group("clippy_loader") {
-    testonly = true
-    deps = [ "//kernel/loader:check_loader_by_clippy($libc_toolchain)" ]
-  }
-
-  group("check_apps") {
-    testonly = true
-    deps = [ "//apps/example:check_apps($libc_toolchain)" ]
-  }
-} else {
-  # bsp == "none" indicates host-only targets.
-  group("default") {
-  }
-
-  group("check_all") {
-    testonly = true
-    deps = [
-      ":check_infra",
-      ":clippy_all",
-      "//build/tests:tests($host_toolchain)",
-    ]
-  }
-
-  group("clippy_all") {
-    testonly = true
-    deps = [ ":clippy_infra" ]
-  }
-
-  group("check_infra") {
-    testonly = true
-    deps = [ "//kernel/infra:check_infra($host_toolchain)" ]
-  }
-
-  group("clippy_infra") {
-    testonly = true
-    deps = [ "//kernel/infra:check_infra_by_clippy($host_toolchain)" ]
-  }
+group("default") {
+  deps = [ "//build/boards/${board}:default" ]
 }
 
+group("check_all") {
+  testonly = true
+  deps = [ "//build/boards/${board}:check_all" ]
+}
+
+# Collect all coverage reports and merge them.
 if (coverage) {
   group("check_coverage") {
     testonly = true
-    deps = [ ":merge_coverage_report" ]
+    deps = [ ":merge_coverage_reports" ]
   }
-  action("merge_coverage_report") {
-    testonly = true
 
-    # FIXME: check_loader is unstable with coverage profile.
-    deps = [
-      ":check_kernel",
-      ":check_librs",
-      ":check_rsrt",
-    ]
-    script = "//build/scripts/merge_cov_report.py"
-    out_dir = root_out_dir
+  action("merge_coverage_reports") {
+    testonly = true
+    deps = [ ":check_all" ]
+    script = "//build/scripts/merge_coverage_reports.py"
     args = [
       "-b",
-      rebase_path(out_dir + "/bin"),
+      rebase_path("${root_out_dir}/bin"),
       "-d",
-      rebase_path(out_dir + "/test"),
+      rebase_path("${root_out_dir}/test"),
       "-o",
-      rebase_path(out_dir + "/cov_report"),
+      rebase_path("${root_out_dir}/cov_report"),
     ]
-    outputs = [ "$target_gen_dir/$target_name/dummy" ]
+    outputs = [ "${target_gen_dir}/${target_name}/dummy" ]
   }
 }
