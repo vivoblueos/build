@@ -23,6 +23,7 @@ blueos_board("qemu_riscv32") {
       "-nostartfiles",
       "-Wl,-gc-sections",
       "-Wl,-T" + rebase_path(_linker_script),
+      "-Wl,-z,norelro",
     ]
     rustflags = [
       "--cfg",
@@ -30,7 +31,6 @@ blueos_board("qemu_riscv32") {
       "-Zemit-stack-sizes",
       "-Crelocation-model=static",
       "-Clinker=riscv-none-elf-gcc",
-      "-Clink-arg=-Wl,-z,norelro",
     ]
     foreach(item, ldflags) {
       rustflags += [ "-Clink-arg=${item}" ]
@@ -41,12 +41,12 @@ blueos_board("qemu_riscv32") {
   app_config = {
     rustflags = [
       "--cfg",
-      "target_board=\"qemu_riscv64\"",
+      "target_board=\"qemu_riscv32\"",
       "-Clinker=clang",
       "-Clink-arg=-fuse-ld=lld",
-      "-Clink-arg=--target=riscv64",
-      "-Clink-arg=-march=rv64",
-      "-Clink-arg=-mabi=lp64",
+      "-Clink-arg=--target=riscv32",
+      "-Clink-arg=-march=rv32",
+      "-Clink-arg=-mabi=ilp32",
       "-Clink-arg=-Wl,-z,norelro",
     ]
   }
