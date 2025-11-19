@@ -13,7 +13,7 @@
 # limitations under the License.
 
 declare_args() {
-  chip = "gd32e507"
+  chip = "gd32e5xx"
   use_defmt = false
   use_defmt_test = false
 }
