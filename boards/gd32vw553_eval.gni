@@ -13,7 +13,7 @@
 # limitations under the License.
 
 declare_args() {
-  chip = "gd32vw5xx"
+  chip = "gd32vw55x"
 }
 
 board_default_toolchain = "//build/toolchain:blueos_riscv32imac"
