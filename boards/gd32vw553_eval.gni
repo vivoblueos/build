@@ -12,11 +12,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+declare_args() {
+  chip = "gd32vw5xx"
+}
+
 board_default_toolchain = "//build/toolchain:blueos_riscv32imac"
 qemu_exe = ""
 machine = ""
-rust_abi_target = ""
+rust_abi_target = "riscv32"
 qemu_extra_args = []
 qemu_net_args = []
 qemu_block_args = []
-board_deps = []
+board_deps = [ "//external/nuclei-sdk" ]
+board_default_toolchain = "//build/toolchain:blueos_riscv32imac"

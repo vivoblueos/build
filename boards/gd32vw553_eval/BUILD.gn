@@ -15,20 +15,48 @@
 import("//build/default_targets.gni")
 import("//build/templates/board.gni")
 
+_sysroot = exec_script("//build/scripts/get_sysroot.py",
+                       [ "riscv-none-elf-gcc" ],
+                       "string")
+
 blueos_board("gd32vw553_eval") {
   kernel_config = {
-    cflags = []
-    ldflags = []
-    rustflags = []
+    _linker_script = "//kernel/kernel/src/boards/${board}/link.x"
+    cflags = [ "--static" ]
+    ldflags = [
+      "-nostartfiles",
+      "-Wl,-gc-sections",
+      "-Wl,-T" + rebase_path(_linker_script),
+      "-Wl,-z,norelro",
+    ]
+    rustflags = [
+      "--cfg",
+      "target_board=\"gd32vw553_eval\"",
+      "-Zemit-stack-sizes",
+      "-Crelocation-model=static",
+      "-Clinker=riscv-none-elf-gcc",
+    ]
     foreach(item, ldflags) {
       rustflags += [ "-Clink-arg=${item}" ]
     }
-    inputs = []
+    inputs = [ _linker_script ]
   }
 
   app_config = {
-    rustflags = []
+    rustflags = [
+      "--cfg",
+      "target_board=\"gd32vw553_eval\"",
+      "-Clinker=clang",
+      "-Clink-arg=-fuse-ld=lld",
+      "-Clink-arg=--target=riscv32",
+      "-Clink-arg=-march=rv32",
+      "-Clink-arg=-mabi=ilp32",
+      "-Clink-arg=-Wl,-z,norelro",
+    ]
   }
+  default = [
+    "//apps/shell",
+    "//apps/example/blinky:blinky_example",
+  ]
   default = []
-  check_all = []
 }
