@@ -12,8 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-declare_args() {
-  chip = "gd32vw5xx"
-}
+board_default_toolchain = "//build/toolchain:blueos_aarch64"
 
-board_default_toolchain = "//build/toolchain:blueos_riscv32imac"
+board_deps = [
+  "//external/arm-gic/v0.4.0:arm_gic",
+  "//external/flat_device_tree/v3.1.1:flat_device_tree",
+  "//external/virtio-drivers/v0.11.0:virtio_drivers",
+]

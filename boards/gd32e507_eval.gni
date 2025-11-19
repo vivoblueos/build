@@ -24,9 +24,7 @@ machine = ""
 qemu_extra_args = []
 qemu_net_args = []
 qemu_block_args = []
-board_deps = [
-  "//external/cortex-m/v0.7.7:cortex_m",
-]
+board_deps = [ "//external/cortex-m/v0.7.7:cortex_m" ]
 
 if (use_defmt) {
   board_deps += [
