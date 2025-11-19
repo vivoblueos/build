@@ -38,7 +38,7 @@ blueos_board("gd32e507_eval") {
     ]
     rustflags = [
       "--cfg",
-      "target_board=\"raspberry_pico2_cortexm\"",
+      "target_board=\"gd32e507_eval\"",
       "--cfg",
       "cortex_m",
       "--cfg",
