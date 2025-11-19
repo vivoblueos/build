@@ -16,51 +16,47 @@ import("//build/default_targets.gni")
 import("//build/templates/board.gni")
 
 _sysroot = exec_script("//build/scripts/get_sysroot.py",
-                       [ "arm-none-eabi-gcc" ],
+                       [ "riscv-none-elf-gcc" ],
                        "string")
 
-blueos_board("gd32e507_eval") {
+blueos_board("gd32vw553_eval") {
   kernel_config = {
     _linker_script = "//kernel/kernel/src/boards/${board}/link.x"
-    cflags = [
-      "--target=thumbv8m.main-none-eabihf",
-      "--static",
-      "-fshort-enums",
-      "-fsigned-char",
-      "-nostdlib",
-      "-isystem",
-      "${_sysroot}/include",
-    ]
+    cflags = [ "--static" ]
     ldflags = [
       "-nostartfiles",
       "-Wl,-gc-sections",
       "-Wl,-T" + rebase_path(_linker_script),
+      "-Wl,-z,norelro",
     ]
     rustflags = [
       "--cfg",
-      "target_board=\"gd32e507_eval\"",
-      "--cfg",
-      "cortex_m",
-      "--cfg",
-      "armv8m",
-      "--cfg",
-      "armv8m_main",
-      "--cfg",
-      "has_fpu",
+      "target_board=\"gd32vw553_eval\"",
       "-Zemit-stack-sizes",
       "-Crelocation-model=static",
-      "-Clinker=arm-none-eabi-gcc",
+      "-Clinker=riscv-none-elf-gcc",
     ]
     foreach(item, ldflags) {
       rustflags += [ "-Clink-arg=${item}" ]
     }
     inputs = [ _linker_script ]
   }
+
   app_config = {
+    rustflags = [
+      "--cfg",
+      "target_board=\"gd32vw553_eval\"",
+      "-Clinker=clang",
+      "-Clink-arg=-fuse-ld=lld",
+      "-Clink-arg=--target=riscv32",
+      "-Clink-arg=-march=rv32",
+      "-Clink-arg=-mabi=ilp32",
+      "-Clink-arg=-Wl,-z,norelro",
+    ]
   }
   default = [
     "//apps/shell",
     "//apps/example/blinky:blinky_example",
   ]
-  check_all = []
+  default = []
 }

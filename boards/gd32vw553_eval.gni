@@ -13,28 +13,7 @@
 # limitations under the License.
 
 declare_args() {
-  chip = "gd32e5xx"
-  use_defmt = false
-  use_defmt_test = false
+  chip = "gd32vw553"
 }
 
-board_default_toolchain = "//build/toolchain:blueos_thumbv8m"
-qemu_exe = ""
-machine = ""
-qemu_extra_args = []
-qemu_net_args = []
-qemu_block_args = []
-board_deps = [
-  "//external/cortex-m/v0.7.7:cortex_m",
-]
-
-if (use_defmt) {
-  board_deps += [
-    "//external/defmt/v1.0.1:defmt",
-    "//external/defmt_rtt/v1.0.0:defmt_rtt",
-  ]
-}
-
-if (use_defmt_test) {
-  board_deps += [ "//external/defmt_test/v0.4.0:defmt_test" ]
-}
+board_default_toolchain = "//build/toolchain:blueos_riscv32imac"
