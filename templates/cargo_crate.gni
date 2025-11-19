@@ -142,7 +142,7 @@ template("cargo_crate") {
         "--output",
         rebase_path(flags_file),
         "--target",
-        llvm_target,
+        rust_abi_target,
         "--src-dir",
         rebase_path(get_path_info(invoker.build_root, "dir"), root_build_dir),
         "--out-dir",
@@ -160,8 +160,6 @@ template("cargo_crate") {
       }
       outputs = [ flags_file ]
 
-      # inputs = [ build_script ]
-
       if (defined(invoker.build_script_outputs)) {
         foreach(generated_file, invoker.build_script_outputs) {
           outputs += [ "$target_out_dir/$generated_file" ]
@@ -177,7 +175,6 @@ template("cargo_crate") {
     build_rust(build_script_name) {
       sources = invoker.build_sources
 
-      # crate_root = invoker.build_root
       crate_type = "bin"
       if (defined(invoker.build_deps)) {
         deps = invoker.build_deps

@@ -62,3 +62,6 @@ set_defaults("build_rust") {
 set_defaults("bindgen") {
   configs = [ "//build/config:${build_type}" ]
 }
+set_defaults("cargo_crate") {
+  configs = [ "//build/config:${build_type}" ]
+}

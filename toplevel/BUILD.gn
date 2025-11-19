@@ -44,8 +44,6 @@ if (coverage) {
   }
 }
 
-if (update_crates) {
-  group("run_gnrt") {
-    deps = [ "//external/gnrt:gen_gnrt" ]
-  }
+group("run_gnrt") {
+  deps = [ "//external/gnrt:gen_gnrt" ]
 }
