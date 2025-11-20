@@ -13,9 +13,38 @@
 # limitations under the License.
 
 board_default_toolchain = "//build/toolchain:blueos_aarch64"
-
+qemu_exe = "qemu-system-aarch64"
+machine = "virt,virtualization=on,gic-version=3"
+rust_abi_target = "aarch64-unknown-none"
+qemu_extra_args = [
+  "-cpu",
+  "cortex-a53",
+  "-smp",
+  "8",
+  "-chardev",
+  "stdio,id=con,mux=on",
+  "-serial",
+  "chardev:con",
+  "-global",
+  "virtio-mmio.force-legacy=false",
+  "-device",
+  "virtio-rng-device,bus=virtio-mmio-bus.1",
+  "-mon",
+  "chardev=con,mode=readline",
+]
+qemu_net_args = [
+  "-netdev",
+  "user,id=u1,hostfwd=tcp:127.0.0.1:10024-10.0.2.15:23,hostfwd=tcp:127.0.0.1:15002-10.0.2.15:5001",
+  "-device",
+  "virtio-net-device,netdev=u1,bus=virtio-mmio-bus.2",
+]
+qemu_block_args = [
+  "-device",
+  "virtio-blk-device,bus=virtio-mmio-bus.3,drive=hd",
+]
 board_deps = [
-  "//external/arm-gic/v0.4.0:arm_gic",
-  "//external/flat_device_tree/v3.1.1:flat_device_tree",
-  "//external/virtio-drivers/v0.11.0:virtio_drivers",
+  "//external/vendor/arm-gic-0.4.0:arm_gic",
+  "//external/vendor/flat_device_tree-3.1.1:flat_device_tree",
+  "//external/vendor/smoltcp-0.12.0:smoltcp",
+  "//external/vendor/virtio-drivers-0.11.0:virtio_drivers",
 ]
