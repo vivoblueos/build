@@ -43,3 +43,7 @@ if (coverage) {
     outputs = [ "${target_gen_dir}/${target_name}/dummy" ]
   }
 }
+
+group("run_gnrt") {
+  deps = [ "//external/gnrt:gen_gnrt" ]
+}

@@ -15,6 +15,7 @@
 board_default_toolchain = "//build/toolchain:blueos_riscv64"
 qemu_exe = "qemu-system-riscv64"
 machine = "virt"
+rust_abi_target = "riscv64"
 qemu_extra_args = [
   "-bios",
   "none",
@@ -23,4 +24,4 @@ qemu_extra_args = [
 ]
 qemu_net_args = []
 qemu_block_args = []
-board_deps = [ "//external/smoltcp/v0.12.0:smoltcp" ]
+board_deps = [ "//external/vendor/smoltcp-0.12.0:smoltcp" ]

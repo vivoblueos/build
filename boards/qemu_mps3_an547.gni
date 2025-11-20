@@ -15,7 +15,8 @@
 board_default_toolchain = "//build/toolchain:blueos_thumbv8m"
 qemu_exe = "qemu-system-arm"
 machine = "mps3-an547"
+rust_abi_target = "thumbv8m.main-none-eabihf"
 qemu_extra_args = []
 qemu_net_args = []
 qemu_block_args = []
-board_deps = [ "//external/cortex-m/v0.7.7:cortex_m" ]
+board_deps = [ "//external/vendor/cortex-m-0.7.7:cortex_m" ]
