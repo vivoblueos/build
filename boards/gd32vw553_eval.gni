@@ -17,3 +17,15 @@ declare_args() {
 }
 
 board_default_toolchain = "//build/toolchain:blueos_riscv32imac"
+qemu_exe = "qemu-system-riscv32"
+machine = "virt"
+rust_abi_target = "riscv32"
+qemu_extra_args = [
+  "-bios",
+  "none",
+]
+qemu_net_args = []
+qemu_block_args = []
+board_deps = [
+  "//external/nuclei-sdk:nuclei-sdk",
+]
