@@ -37,8 +37,7 @@ blueos_board("rk3568") {
     inputs = [ _linker_script ]
   }
 
-  app_config = {
-  }
+  app_config = {}
 
   default = [ "//apps/shell:shell_runner" ]
   check_all = []
