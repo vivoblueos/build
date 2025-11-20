@@ -21,6 +21,7 @@ declare_args() {
 board_default_toolchain = "//build/toolchain:blueos_thumbv8m"
 qemu_exe = ""
 machine = ""
+rust_abi_target = "thumbv8m.main-none-eabihf"
 qemu_extra_args = []
 qemu_net_args = []
 qemu_block_args = []
