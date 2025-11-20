@@ -40,8 +40,6 @@ blueos_board("rk3568") {
   app_config = {
   }
 
-  default = [
-    "//apps/shell:shell_runner",
-  ]
-  check_all = [] 
+  default = [ "//apps/shell:shell_runner" ]
+  check_all = []
 }
