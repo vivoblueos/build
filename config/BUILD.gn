@@ -60,6 +60,7 @@ config("debug") {
                 "-Copt-level=1",
                 "-Cforce-frame-pointers=yes",
                 "-Cdebug-assertions",
+                "-Cdebuginfo=full",
               ] + _common_rustflags
 }
 
