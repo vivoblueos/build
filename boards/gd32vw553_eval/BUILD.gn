@@ -22,8 +22,7 @@ _sysroot = exec_script("//build/scripts/get_sysroot.py",
 blueos_board("gd32vw553_eval") {
   kernel_config = {
     _linker_script = "//kernel/kernel/src/boards/${board}/link.x"
-    cflags = [ 
-      "--target=riscv-none-elf",
+    cflags = [
       "--static",
       "-fshort-enums",
       "-fsigned-char",
