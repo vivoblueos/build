@@ -58,6 +58,7 @@ config("debug") {
   cflags_c = [ "-std=c11" ]
   rustflags = [
                 "-Copt-level=1",
+                "-Cdebuginfo=full",
                 "-Cforce-frame-pointers=yes",
                 "-Cdebug-assertions",
               ] + _common_rustflags
