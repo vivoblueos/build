@@ -25,7 +25,7 @@ blueos_board("qemu_mps2_an385") {
     cflags = [
       "--target=thumbv7m-none-eabi",
       "-mthumb",
-      "-march=armv7em",
+      "-march=armv7e-m",
       "-mcpu=cortex-m3",
       "--static",
       "-fshort-enums",
@@ -36,7 +36,7 @@ blueos_board("qemu_mps2_an385") {
     ]
     ldflags = [
       "-mthumb",
-      "-march=armv7em",
+      "-march=armv7e-m",
       "-mcpu=cortex-m3",
       "-nostartfiles",
       "-Wl,-gc-sections",
