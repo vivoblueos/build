@@ -57,6 +57,8 @@ def do_gen(config, template, suffix='', need_log=False):
 
         block_args = ''
         if config.block_img:
+            dirname = os.path.dirname(config.block_img)
+            os.makedirs(dirname, exist_ok=True)
             f.write(
                 GEN_BLOCK_IMG.format(block_img=config.block_img,
                                      block_size=config.block_size))
