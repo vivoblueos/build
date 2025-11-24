@@ -12,22 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import("//build/default_targets.gni")
-import("//build/templates/board.gni")
-
-blueos_board("rk3568") {
-  kernel_config = {
-    cflags = []
-    ldflags = []
-    rustflags = []
-    foreach(item, ldflags) {
-      rustflags += [ "-Clink-arg=${item}" ]
-    }
-    inputs = []
-  }
-
-  app_config = {}
-
-  default = [] 
-  check_all = []
-}
+board_default_toolchain = "//build/toolchain:blueos_aarch64"
+qemu_exe = ""
+machine = ""
+rust_abi_target = ""
+qemu_extra_args = []
+qemu_net_args = []
+qemu_block_args = []
+board_deps = []
