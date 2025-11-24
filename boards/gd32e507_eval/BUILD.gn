@@ -59,7 +59,7 @@ blueos_board("gd32e507_eval") {
   app_config = {
   }
 
-  if (build_type == "debug") {
+  if (debug) {
     # FIXME: Disable apps in debug build temporarily, 
     # because of the size of firmware too big in debug mode.
     default = []
