@@ -35,6 +35,7 @@ blueos_board("qemu_mps2_an385") {
       "-nostartfiles",
       "-Wl,-gc-sections",
       "-Wl,-T" + rebase_path(_linker_script),
+      "-Wl,-z,norelro",
     ]
     rustflags = [
       "--cfg",
@@ -53,6 +54,12 @@ blueos_board("qemu_mps2_an385") {
     inputs = [ _linker_script ]
   }
   app_config = {
+    rustflags = [
+      "-Clinker=clang",
+      "-Clink-arg=-fuse-ld=lld",
+      "-Clink-arg=--target=thumbv7m-none-eabi",
+      "-Clink-arg=-Wl,-z,norelro",
+    ]
   }
   default = [
     "//apps/example:check_apps",
