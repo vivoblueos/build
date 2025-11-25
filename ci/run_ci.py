@@ -44,6 +44,8 @@ BOARDS = [
     'qemu_riscv64',
     'qemu_virt64_aarch64',
     'gd32vw553_eval',
+    'rk3568',
+    'gd32e507_eval',
 ]
 BUILD_TYPES = ['release', 'debug']
 DIRECT_SYSCALL_HANDLER_FLAGS = [True, False]
