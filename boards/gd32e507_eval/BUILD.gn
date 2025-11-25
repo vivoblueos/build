@@ -15,30 +15,17 @@
 import("//build/default_targets.gni")
 import("//build/templates/board.gni")
 
-blueos_board("rk3568") {
+blueos_board("gd32e507_eval") {
   kernel_config = {
-    _linker_script = "//kernel/kernel/src/boards/${board}/link.x"
-    cflags = [ "--static" ]
-    ldflags = [
-      "-nostartfiles",
-      "-Wl,-gc-sections",
-      "-Wl,-T" + rebase_path(_linker_script),
-    ]
-    rustflags = [
-      "--cfg",
-      "target_board=\"rk3568\"",
-      "-Zemit-stack-sizes",
-      "-Crelocation-model=static",
-      "-Clinker=aarch64-none-elf-gcc",
-    ]
+    cflags = []
+    ldflags = []
+    rustflags = []
     foreach(item, ldflags) {
       rustflags += [ "-Clink-arg=${item}" ]
     }
-    inputs = [ _linker_script ]
+    inputs = []
   }
-
   app_config = {}
-
-  default = [ "//apps/shell:shell_runner" ]
-  check_all = clippy_all_on_virtual_board
+  default = []
+  check_all = []
 }
