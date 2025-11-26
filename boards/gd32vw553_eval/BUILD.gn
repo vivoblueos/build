@@ -66,5 +66,10 @@ blueos_board("gd32vw553_eval") {
     "//apps/shell",
     "//apps/example/blinky:blinky_example",
   ]
-  check_all = clippy_all_on_virtual_board
+  check_all = [
+    "//kernel/kernel:check_kernel_by_clippy",
+    "//librs:check_librs_by_clippy",
+    "//kernel/adapter:check_adapter_by_clippy",
+    "//kernel/rsrt:check_rsrt_by_clippy",
+  ]
 }
