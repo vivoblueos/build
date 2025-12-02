@@ -47,3 +47,8 @@ if (coverage) {
 group("run_gnrt") {
   deps = [ "//external/gnrt:gen_gnrt" ]
 }
+
+group("run_metric_tests") {
+  testonly = true
+  deps = [ "//build/boards/none:run_metric_tests" ]
+}

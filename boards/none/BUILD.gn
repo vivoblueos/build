@@ -24,4 +24,5 @@ blueos_board("none") {
     "//kernel/infra:check_infra",
     "//kernel/infra:check_infra_by_clippy",
   ]
+  run_metric_tests = [ "//kernel/benchmark:run_rtt_thread_metric_test" ]
 }

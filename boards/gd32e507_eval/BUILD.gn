@@ -60,7 +60,7 @@ blueos_board("gd32e507_eval") {
   }
 
   if (debug) {
-    # FIXME: Disable apps in debug build temporarily, 
+    # FIXME: Disable apps in debug build temporarily,
     # because of the size of firmware too big in debug mode.
     default = []
   } else {
@@ -71,4 +71,5 @@ blueos_board("gd32e507_eval") {
   }
 
   check_all = clippy_all_on_virtual_board
+  run_metric_tests = []
 }

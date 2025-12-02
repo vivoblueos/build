@@ -31,4 +31,5 @@ blueos_board("gd32vw553_eval") {
   }
   default = []
   check_all = []
+  run_metric_tests = []
 }

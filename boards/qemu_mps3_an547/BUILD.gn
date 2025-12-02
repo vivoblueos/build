@@ -71,6 +71,7 @@ blueos_board("qemu_mps3_an547") {
   ]
   check_all = check_all_on_virtual_board + clippy_all_on_virtual_board +
               [ "//apps/example:check_apps" ]
+  run_metric_tests = []
 
   # FIXME: Enable thread_metric on this board. Currently, VFS is disabled on
   # this board, so that `printf` in libc is unavailable.  However, thread_metric

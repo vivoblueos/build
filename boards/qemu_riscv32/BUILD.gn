@@ -58,4 +58,5 @@ blueos_board("qemu_riscv32") {
                                "//kernel/adapter*",
                                "//kernel/loader*",
                              ])
+  run_metric_tests = []
 }

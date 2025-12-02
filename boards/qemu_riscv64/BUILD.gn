@@ -57,4 +57,5 @@ blueos_board("qemu_riscv64") {
   default = []
   _check_all = check_all_on_virtual_board + clippy_all_on_virtual_board
   check_all = filter_exclude(_check_all, [ "//kernel/adapter*" ])
+  run_metric_tests = []
 }

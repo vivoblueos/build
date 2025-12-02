@@ -68,4 +68,5 @@ blueos_board("qemu_mps2_an385") {
   check_all = default + check_all_on_virtual_board + clippy_all_on_virtual_board
   check_all += [ "//kernel/adapter/cmsis:run_adapter_validation" ]
   check_all += [ "//kernel/adapter/thread_metric:run_tests" ]
+  run_metric_tests = []
 }

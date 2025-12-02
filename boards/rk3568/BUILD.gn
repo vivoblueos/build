@@ -26,8 +26,10 @@ blueos_board("rk3568") {
     inputs = []
   }
 
-  app_config = {}
+  app_config = {
+  }
 
-  default = [] 
+  default = []
   check_all = []
+  run_metric_tests = []
 }

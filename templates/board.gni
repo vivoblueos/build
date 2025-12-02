@@ -38,4 +38,9 @@ template("blueos_board") {
     testonly = true
     deps = invoker.check_all
   }
+
+  group("run_metric_tests") {
+    testonly = true
+    deps = invoker.run_metric_tests
+  }
 }
