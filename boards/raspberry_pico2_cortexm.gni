@@ -16,6 +16,7 @@ declare_args() {
   chip = "rp2350"
   use_defmt = false
   use_defmt_test = false
+  use_bme280 = true
 }
 
 board_default_toolchain = "//build/toolchain:blueos_thumbv8m"
@@ -40,4 +41,8 @@ if (use_defmt) {
 
 if (use_defmt_test) {
   board_deps += [ "//external/vendor/defmt-test-0.4.0:defmt_test" ]
+}
+
+if (use_bme280) {
+  board_deps += [ "//external/vendor/bme280-0.5.1:bme280" ]
 }
