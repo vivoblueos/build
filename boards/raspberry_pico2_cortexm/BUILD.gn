@@ -64,7 +64,8 @@ blueos_board("raspberry_pico2_cortexm") {
     }
     inputs = [ _linker_script ]
   }
-  app_config = {}
+  app_config = {
+  }
   default = [
     "//apps/shell",
     "//apps/example/blinky:blinky_example",
