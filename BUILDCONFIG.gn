@@ -40,28 +40,37 @@ assert(defined(board_default_toolchain))
 set_default_toolchain(board_default_toolchain)
 set_defaults("source_set") {
   configs = [ "//build/config:${build_type}" ]
+  public_configs = [ "//build/config:${build_type}" ]
 }
 set_defaults("static_library") {
   configs = [ "//build/config:${build_type}" ]
+  public_configs = [ "//build/config:${build_type}" ]
 }
 set_defaults("shared_library") {
   configs = [ "//build/config:${build_type}" ]
+  public_configs = [ "//build/config:${build_type}" ]
 }
 set_defaults("executable") {
   configs = [ "//build/config:${build_type}" ]
+  public_configs = [ "//build/config:${build_type}" ]
 }
 set_defaults("rust_library") {
   configs = [ "//build/config:${build_type}" ]
+  public_configs = [ "//build/config:${build_type}" ]
 }
 set_defaults("rust_proc_macro") {
   configs = [ "//build/config:${build_type}" ]
+  public_configs = [ "//build/config:${build_type}" ]
 }
 set_defaults("build_rust") {
   configs = [ "//build/config:${build_type}" ]
+  public_configs = [ "//build/config:${build_type}" ]
 }
 set_defaults("bindgen") {
   configs = [ "//build/config:${build_type}" ]
+  public_configs = [ "//build/config:${build_type}" ]
 }
 set_defaults("cargo_crate") {
   configs = [ "//build/config:${build_type}" ]
+  public_configs = [ "//build/config:${build_type}" ]
 }
