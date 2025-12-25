@@ -20,21 +20,21 @@ _sysroot = exec_script("//build/scripts/get_sysroot.py",
                        "string")
 
 blueos_board("qemu_mps2_an385") {
-  _linker_script =
-      exec_script("//build/scripts/preprocess_linker_script.py",
-                  [
-                    "--preprocesser",
-                    "arm-none-eabi-gcc",
-                    "--input",
-                    rebase_path("//kernel/arch/arm/cortex_m/link.ld"),
-                    "--include_dir",
-                    rebase_path("${root_build_dir}"),
-                    "--output",
-                    rebase_path("${root_build_dir}/link.pre.ld"),
-                  ],
-                  "string",
-                  [ rebase_path("${root_build_dir}/autoconf.h") ])
   kernel_config = {
+    _linker_script =
+        exec_script("//build/scripts/preprocess_linker_script.py",
+                    [
+                      "--preprocesser",
+                      "arm-none-eabi-gcc",
+                      "--input",
+                      rebase_path("//kernel/arch/arm/cortex_m/link.ld"),
+                      "--include_dir",
+                      rebase_path("${root_build_dir}"),
+                      "--output",
+                      rebase_path("${root_build_dir}/link.pre.ld"),
+                    ],
+                    "string",
+                    [ rebase_path("${root_build_dir}/autoconf.h") ])
     cflags = [
       "--target=thumbv7m-none-eabi",
       "--static",
@@ -64,6 +64,7 @@ blueos_board("qemu_mps2_an385") {
     foreach(item, ldflags) {
       rustflags += [ "-Clink-arg=${item}" ]
     }
+    inputs = [ _linker_script ]
   }
   app_config = {
     rustflags = [
