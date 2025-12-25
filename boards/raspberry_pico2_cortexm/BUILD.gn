@@ -27,7 +27,7 @@ blueos_board("raspberry_pico2_cortexm") {
                       "--preprocesser",
                       "arm-none-eabi-gcc",
                       "--input",
-                      rebase_path("//kernel/arch/arm/cortex_m/link.ld"),
+                      rebase_path("//kernel/arch/arm/cortex_m/link.x"),
                       "--include_dir",
                       rebase_path("${root_build_dir}"),
                       "--output",
@@ -36,7 +36,7 @@ blueos_board("raspberry_pico2_cortexm") {
                     "string",
                     [
                       rebase_path("${root_build_dir}/autoconf.h"),
-                      rebase_path("//kernel/arch/arm/cortex_m/link.ld"),
+                      rebase_path("//kernel/arch/arm/cortex_m/link.x"),
                     ])
     cflags = [
       "--target=thumbv8m.main-none-eabihf",
@@ -70,7 +70,7 @@ blueos_board("raspberry_pico2_cortexm") {
     foreach(item, ldflags) {
       rustflags += [ "-Clink-arg=${item}" ]
     }
-    inputs = [ "//kernel/arch/arm/cortex_m/link.ld" ]
+    inputs = [ "//kernel/arch/arm/cortex_m/link.x" ]
   }
   app_config = {
   }
