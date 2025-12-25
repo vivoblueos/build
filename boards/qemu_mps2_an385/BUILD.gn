@@ -34,7 +34,10 @@ blueos_board("qemu_mps2_an385") {
                       rebase_path("${root_build_dir}/link.pre.ld"),
                     ],
                     "string",
-                    [ rebase_path("${root_build_dir}/autoconf.h") ])
+                    [
+                      rebase_path("${root_build_dir}/autoconf.h"),
+                      rebase_path("//kernel/arch/arm/cortex_m/link.ld"),
+                    ])
     cflags = [
       "--target=thumbv7m-none-eabi",
       "--static",
