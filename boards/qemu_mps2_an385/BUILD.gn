@@ -67,7 +67,7 @@ blueos_board("qemu_mps2_an385") {
     foreach(item, ldflags) {
       rustflags += [ "-Clink-arg=${item}" ]
     }
-    inputs = [ _linker_script ]
+    inputs = [ "//kernel/arch/arm/cortex_m/link.ld" ]
   }
   app_config = {
     rustflags = [
