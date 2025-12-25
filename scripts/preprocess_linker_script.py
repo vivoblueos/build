@@ -42,7 +42,7 @@ if __name__ == "__main__":
     parser.add_argument("--output", help="Output preprocessed linker script")
     args = parser.parse_args()
     try:
-        # `autoconf.h` isn't produced until later in the build process, 
+        # `autoconf.h` isn't produced until later in the build process,
         # so create an temporary file here to satisfy the `gn gen` phase.
         autoconf_c_header = os.path.join(args.include_dir, "autoconf.h")
         if not os.path.exists(autoconf_c_header):
