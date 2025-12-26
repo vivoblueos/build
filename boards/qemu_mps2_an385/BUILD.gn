@@ -14,30 +14,21 @@
 
 import("//build/default_targets.gni")
 import("//build/templates/board.gni")
+import("//build/templates/generate_linker.gni")
 
 _sysroot = exec_script("//build/scripts/get_sysroot.py",
                        [ "arm-none-eabi-gcc" ],
                        "string")
 
+generate_linker("generate_linker") {
+  preprocesser = "arm-none-eabi-gcc"
+  ref_linker_script = "//kernel/arch/arm/cortex_m/link.x"
+  output = "${root_build_dir}/link.pre.ld"
+}
+
 blueos_board("qemu_mps2_an385") {
   kernel_config = {
-    _linker_script =
-        exec_script("//build/scripts/preprocess_linker_script.py",
-                    [
-                      "--preprocesser",
-                      "arm-none-eabi-gcc",
-                      "--input",
-                      rebase_path("//kernel/arch/arm/cortex_m/link.x"),
-                      "--include_dir",
-                      rebase_path("${root_build_dir}"),
-                      "--output",
-                      rebase_path("${root_build_dir}/link.pre.ld"),
-                    ],
-                    "string",
-                    [
-                      rebase_path("${root_build_dir}/autoconf.h"),
-                      rebase_path("//kernel/arch/arm/cortex_m/link.x"),
-                    ])
+    _linker_script = rebase_path("${root_build_dir}/link.pre.ld")
     cflags = [
       "--target=thumbv7m-none-eabi",
       "--static",
@@ -67,7 +58,7 @@ blueos_board("qemu_mps2_an385") {
     foreach(item, ldflags) {
       rustflags += [ "-Clink-arg=${item}" ]
     }
-    inputs = [ "//kernel/arch/arm/cortex_m/link.x" ]
+    inputs = [ _linker_script ]
   }
   app_config = {
     rustflags = [

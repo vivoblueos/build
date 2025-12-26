@@ -26,6 +26,7 @@ qemu_extra_args = []
 qemu_net_args = []
 qemu_block_args = []
 board_deps = [
+  "//build/boards/${board}:generate_linker",
   "//external/vendor/cortex-m-0.7.7:cortex_m",
   "//external/vendor/gd32e5-0.9.1:gd32e5",
 ]

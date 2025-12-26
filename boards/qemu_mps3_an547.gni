@@ -19,4 +19,8 @@ rust_abi_target = "thumbv8m.main-none-eabihf"
 qemu_extra_args = []
 qemu_net_args = []
 qemu_block_args = []
-board_deps = [ "//external/vendor/cortex-m-0.7.7:cortex_m" ]
+board_deps = [
+  "//build/boards/${board}:generate_linker",
+  "//external/vendor/cortex-m-0.7.7:cortex_m",
+  "//external/vendor/smoltcp-0.12.0:smoltcp",
+]
