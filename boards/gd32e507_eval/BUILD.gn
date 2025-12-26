@@ -14,7 +14,7 @@
 
 import("//build/default_targets.gni")
 import("//build/templates/board.gni")
-import("//build/templates/generate_linker.gni")
+import("//build/templates/linker_script.gni")
 
 _sysroot = exec_script("//build/scripts/get_sysroot.py",
                        [ "arm-none-eabi-gcc" ],
