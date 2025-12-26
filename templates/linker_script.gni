@@ -17,19 +17,19 @@ template("generate_linker") {
     script = "//build/scripts/preprocess_linker_script.py"
     inputs = [
       "${root_build_dir}/autoconf.h",
-      "${invoker.ref_linker_script}",
+      "${invoker.template}",
     ]
     args = [
       "--preprocesser",
       "${invoker.preprocesser}",
       "--input",
-      rebase_path("${invoker.ref_linker_script}"),
+      rebase_path("${invoker.template}"),
       "--include_dir",
       rebase_path("${root_build_dir}"),
       "--output",
       rebase_path("${invoker.output}"),
     ]
-    outputs = [ "${root_build_dir}/link.pre.ld" ]
+    outputs = [ "${invoker.output}" ]
     deps = [ "//kernel/kconfig:generate_c_header" ]
   }
 }

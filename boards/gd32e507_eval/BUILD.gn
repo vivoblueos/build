@@ -20,15 +20,15 @@ _sysroot = exec_script("//build/scripts/get_sysroot.py",
                        [ "arm-none-eabi-gcc" ],
                        "string")
 
-gen_linker_script("default_linker_script") {
-  preprocesser = "arm-none-eabi-gcc"
+generate_linker("default_linker_script") {
+  preprocesser = "arm-none-eabi-cpp"
   template = "//kernel/arch/arm/cortex_m/link.x"
-  output = "${root_build_dir}/link.pre.ld"
+  output = "${target_gen_dir}/link.pre.ld"
 }
 
 blueos_board("gd32e507_eval") {
   kernel_config = {
-    _linker_script = rebase_path("${root_build_dir}/link.pre.ld")
+    _linker_script = rebase_path("${target_gen_dir}/link.pre.ld")
     cflags = [
       "--target=thumbv8m.main-none-eabihf",
       "--static",
