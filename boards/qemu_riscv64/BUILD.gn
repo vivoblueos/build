@@ -20,6 +20,7 @@ blueos_board("qemu_riscv64") {
     _linker_script = "//kernel/kernel/src/boards/${board}/link.x"
     cflags = [ "--static" ]
     ldflags = [
+      "-nostartfiles",
       "-Wl,-gc-sections",
       "-Wl,-T" + rebase_path(_linker_script),
     ]
