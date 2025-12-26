@@ -22,7 +22,7 @@ _sysroot = exec_script("//build/scripts/get_sysroot.py",
 
 generate_linker("generate_linker") {
   preprocesser = "arm-none-eabi-gcc"
-  ref_linker_script = "//kernel/arch/arm/cortex_m/link.x"
+  template = "//kernel/arch/arm/cortex_m/link.x"
   output = "${root_build_dir}/link.pre.ld"
 }
 
