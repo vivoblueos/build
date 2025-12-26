@@ -16,7 +16,7 @@ template("generate_linker") {
   action("${target_name}") {
     script = "//build/scripts/preprocess_linker_script.py"
     inputs = [
-      "${root_build_dir}/autoconf.h",
+      "${root_gen_dir}/autoconf.h",
       "${invoker.template}",
     ]
     args = [
@@ -25,7 +25,7 @@ template("generate_linker") {
       "--input",
       rebase_path("${invoker.template}"),
       "--include_dir",
-      rebase_path("${root_build_dir}"),
+      rebase_path("${root_gen_dir}"),
       "--output",
       rebase_path("${invoker.output}"),
     ]
