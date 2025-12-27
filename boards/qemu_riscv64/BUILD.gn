@@ -23,6 +23,7 @@ blueos_board("qemu_riscv64") {
       "-nostartfiles",
       "-Wl,-gc-sections",
       "-Wl,-T" + rebase_path(_linker_script),
+      "-Wl,-z,norelro",
     ]
     rustflags = [
       "--cfg",
@@ -34,7 +35,6 @@ blueos_board("qemu_riscv64") {
       "-Clink-arg=--target=riscv64",
       "-Clink-arg=-march=rv64",
       "-Clink-arg=-mabi=lp64",
-      "-Clink-arg=-Wl,-z,norelro",
     ]
     foreach(item, ldflags) {
       rustflags += [ "-Clink-arg=${item}" ]
