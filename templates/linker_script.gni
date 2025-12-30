@@ -12,15 +12,24 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-board_default_toolchain = "//build/toolchain:blueos_thumbv7m"
-qemu_exe = "qemu-system-arm"
-machine = "mps2-an385"
-rust_abi_target = "thumbv7m-none-eabi"
-qemu_extra_args = []
-qemu_net_args = []
-qemu_block_args = []
-board_deps = [
-  "//build/boards/${board}:default_linker_script",
-  "//external/vendor/cortex-m-0.7.7:cortex_m",
-  "//external/vendor/smoltcp-0.12.0:smoltcp",
-]
+template("generate_linker_script") {
+  action("${target_name}") {
+    script = "//build/scripts/preprocess_linker_script.py"
+    inputs = [
+      "${root_gen_dir}/autoconf.h",
+      "${invoker.template}",
+    ]
+    args = [
+      "--preprocesser",
+      "${invoker.preprocesser}",
+      "--input",
+      rebase_path("${invoker.template}"),
+      "--include_dir",
+      rebase_path("${root_gen_dir}"),
+      "--output",
+      rebase_path("${invoker.output}"),
+    ]
+    outputs = [ "${invoker.output}" ]
+    deps = [ "//kernel/kconfig:generate_c_header" ]
+  }
+}

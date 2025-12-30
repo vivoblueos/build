@@ -14,14 +14,21 @@
 
 import("//build/default_targets.gni")
 import("//build/templates/board.gni")
+import("//build/templates/linker_script.gni")
 
 _sysroot = exec_script("//build/scripts/get_sysroot.py",
                        [ "arm-none-eabi-gcc" ],
                        "string")
 
+generate_linker_script("default_linker_script") {
+  preprocesser = "arm-none-eabi-cpp"
+  template = "//kernel/arch/arm/cortex_m/link.x"
+  output = "${target_gen_dir}/link.pre.ld"
+}
+
 blueos_board("raspberry_pico2_cortexm") {
   kernel_config = {
-    _linker_script = "//kernel/kernel/src/boards/${board}/link.x"
+    _linker_script = rebase_path("${target_gen_dir}/link.pre.ld")
     cflags = [
       "--target=thumbv8m.main-none-eabihf",
       "--static",
