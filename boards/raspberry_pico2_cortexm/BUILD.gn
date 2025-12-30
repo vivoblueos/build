@@ -20,7 +20,7 @@ _sysroot = exec_script("//build/scripts/get_sysroot.py",
                        [ "arm-none-eabi-gcc" ],
                        "string")
 
-generate_linker("default_linker_script") {
+generate_linker_script("default_linker_script") {
   preprocesser = "arm-none-eabi-cpp"
   template = "//kernel/arch/arm/cortex_m/link.x"
   output = "${target_gen_dir}/link.pre.ld"
