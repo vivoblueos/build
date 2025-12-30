@@ -51,6 +51,14 @@ blueos_board("raspberry_pico2_cortexm") {
       "-Crelocation-model=static",
       "-Clinker=arm-none-eabi-gcc",
     ]
+
+    if (use_bme280) {
+      rustflags += [
+        "--cfg",
+        "use_bme280",
+      ]
+    }
+
     foreach(item, ldflags) {
       rustflags += [ "-Clink-arg=${item}" ]
     }
