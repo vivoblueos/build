@@ -311,6 +311,52 @@ template("blueos_toolchain") {
       default_output_dir = "{{root_out_dir}}/bin"
     }
 
+    tool("rust_dylib") {
+      depfile = "{{target_out_dir}}/{{target_output_name}}.d"
+      mapfile = "{{target_out_dir}}/{{target_output_name}}.map"
+      clippy_rspfile = "{{target_out_dir}}/{{target_output_name}}.clippy_rsp"
+      outfile = "{{output_dir}}/lib{{target_output_name}}.so"
+
+      clippy_command = "{{rustenv}} ${clippy_driver} --crate-name {{crate_name}} --crate-type {{crate_type}} {{rustflags}} ${clippy_lint_flags} {{source}} {{externs}} {{rustdeps}} -o ${outfile}.clippy"
+
+      gen_clippy_rspfile_command =
+          " && echo '${clippy_command}' > ${clippy_rspfile}"
+
+      rustc_command = "{{rustenv}} ${rustc} --crate-name {{crate_name}} --crate-type {{crate_type}} --emit=dep-info=$depfile,link {{rustflags}} -o ${outfile} {{source}} {{externs}} {{rustdeps}} -Clink-arg=${link_map_opt}${mapfile}"
+
+      command = "${rustc_command} ${gen_clippy_rspfile_command}"
+      description = "RUST ${outfile}"
+      outputs = [
+        outfile,
+        mapfile,
+        clippy_rspfile,
+      ]
+      default_output_dir = "{{root_out_dir}}/lib"
+    }
+
+    tool("rust_cdylib") {
+      depfile = "{{target_out_dir}}/{{target_output_name}}.d"
+      mapfile = "{{target_out_dir}}/{{target_output_name}}.map"
+      clippy_rspfile = "{{target_out_dir}}/{{target_output_name}}.clippy_rsp"
+      outfile = "{{output_dir}}/lib{{target_output_name}}.so"
+
+      clippy_command = "{{rustenv}} ${clippy_driver} --crate-name {{crate_name}} --crate-type {{crate_type}} {{rustflags}} ${clippy_lint_flags} {{source}} {{externs}} {{rustdeps}} -o ${outfile}.clippy"
+
+      gen_clippy_rspfile_command =
+          " && echo '${clippy_command}' > ${clippy_rspfile}"
+
+      rustc_command = "{{rustenv}} ${rustc} --crate-name {{crate_name}} --crate-type {{crate_type}} --emit=dep-info=$depfile,link {{rustflags}} -o ${outfile} {{source}} {{externs}} {{rustdeps}} -Clink-arg=${link_map_opt}${mapfile}"
+
+      command = "${rustc_command} ${gen_clippy_rspfile_command}"
+      description = "RUST ${outfile}"
+      outputs = [
+        outfile,
+        mapfile,
+        clippy_rspfile,
+      ]
+      default_output_dir = "{{root_out_dir}}/lib"
+    }
+
     tool("rust_staticlib") {
       depfile = "{{target_out_dir}}/{{target_output_name}}/{{crate_name}}.d"
       outfile = "{{target_out_dir}}/{{target_output_name}}/lib{{crate_name}}.a"

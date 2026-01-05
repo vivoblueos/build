@@ -21,6 +21,7 @@ blueos_board("none") {
   }
   default = []
   check_all = [
+    "//build/tests",
     "//kernel/infra:check_infra",
     "//kernel/infra:check_infra_by_clippy",
   ]
