@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-rust_library("foo") {
+rust_library("foo_r") {
   crate_type = "dylib"
   sources = [ "src/lib.rs" ]
 }

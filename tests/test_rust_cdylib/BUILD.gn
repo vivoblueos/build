@@ -1,4 +1,4 @@
-# Copyright (c) 2025 vivo Mobile Communication Co., Ltd.
+# Copyright (c) 2026 vivo Mobile Communication Co., Ltd.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,18 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-group("tests") {
-  testonly = true
-  deps = [
-    "test_c_dylib:foo",
-    "test_c_exe:foo",
-    "test_c_staticlib:foo",
-    "test_rust_bin_link_cxx_staticlib:foo",
-    "test_rust_bin_link_rlib:foo",
-    "test_rust_cdylib:foo_c",
-    "test_rust_dylib:foo_r",
-
-    # Link rust bin against a rust staticlib is tricky.
-    # We don't show a demo here.
-  ]
+rust_library("foo_c") {
+  crate_type = "cdylib"
+  sources = [ "src/lib.rs" ]
 }
