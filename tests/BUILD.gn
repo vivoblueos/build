@@ -20,6 +20,7 @@ group("tests") {
     "test_c_staticlib:foo",
     "test_rust_bin_link_cxx_staticlib:foo",
     "test_rust_bin_link_rlib:foo",
+    "test_rust_dylib:foo",
 
     # Link rust bin against a rust staticlib is tricky.
     # We don't show a demo here.
