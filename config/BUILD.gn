@@ -29,6 +29,8 @@ _common_rustflags = [
   "dead_code",
   "-A",
   "static_mut_refs",
+  "--cfg",
+  "${build_type}",
 ]
 
 config("release") {
