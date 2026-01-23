@@ -46,7 +46,7 @@ BOARDS = [
     'gd32vw553_eval',
     'rk3568',
     'gd32e507_eval',
-    'esp32c3',
+    'seed_xiao_esp32c3',
 ]
 BUILD_TYPES = ['release', 'debug']
 DIRECT_SYSCALL_HANDLER_FLAGS = [True, False]
