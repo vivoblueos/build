@@ -15,7 +15,7 @@
 import("//build/default_targets.gni")
 import("//build/templates/board.gni")
 
-blueos_board("seed_xiao_esp32c3") {
+blueos_board("seeed_xiao_esp32c3") {
   kernel_config = {
     cflags = []
     ldflags = []
