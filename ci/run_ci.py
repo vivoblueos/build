@@ -47,6 +47,7 @@ BOARDS = [
     'rk3568',
     'gd32e507_eval',
     'seeed_xiao_esp32c3',
+    'raspberry_pico2_cortexm',
 ]
 BUILD_TYPES = ['release', 'debug']
 DIRECT_SYSCALL_HANDLER_FLAGS = [True, False]
