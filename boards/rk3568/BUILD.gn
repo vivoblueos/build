@@ -17,17 +17,34 @@ import("//build/templates/board.gni")
 
 blueos_board("rk3568") {
   kernel_config = {
-    cflags = []
-    ldflags = []
-    rustflags = []
+    _linker_script = "//kernel/kernel/src/boards/${board}/link.x"
+    cflags = [ "--static" ]
+    ldflags = [
+      "-nostartfiles",
+      "-Wl,-gc-sections",
+      "-Wl,-T" + rebase_path(_linker_script),
+    ]
+    rustflags = [
+      "--cfg",
+      "target_board=\"rk3568\"",
+      "-Zemit-stack-sizes",
+      "-Crelocation-model=static",
+      "-Clinker=aarch64-none-elf-gcc",
+    ]
     foreach(item, ldflags) {
       rustflags += [ "-Clink-arg=${item}" ]
     }
-    inputs = []
+    inputs = [ _linker_script ]
   }
 
-  app_config = {}
+  app_config = {
+    rustflags = [
+      "--cfg",
+      "target_board=\"rk3568\"",
+      "-Clinker=aarch64-none-elf-gcc",
+    ]
+  }
 
-  default = [] 
+  default = [ "//apps/shell" ]
   check_all = []
 }
