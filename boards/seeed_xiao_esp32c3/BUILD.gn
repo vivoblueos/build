@@ -29,6 +29,8 @@ blueos_board("seeed_xiao_esp32c3") {
   app_config = {
     rustflags = []
   }
-  default = []
+  default = [
+    "//apps/shell:shell",
+  ]
   check_all = []
 }
