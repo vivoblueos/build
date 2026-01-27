@@ -19,7 +19,12 @@ blueos_board("seeed_xiao_esp32c3") {
   kernel_config = {
     cflags = []
     ldflags = []
-    rustflags = []
+    rustflags = [
+      "-Clinker=clang",
+      "-Clink-arg=--target=riscv32",
+      "-Clink-arg=-march=rv32imc",
+      "-Clink-arg=-fuse-ld=lld",
+    ]
     foreach(item, ldflags) {
       rustflags += [ "-Clink-arg=${item}" ]
     }
@@ -27,7 +32,12 @@ blueos_board("seeed_xiao_esp32c3") {
   }
 
   app_config = {
-    rustflags = []
+    rustflags = [
+      "-Clinker=clang",
+      "-Clink-arg=--target=riscv32",
+      "-Clink-arg=-march=rv32imc",
+      "-Clink-arg=-fuse-ld=lld",
+    ]
   }
   default = [
     "//apps/shell:shell",
