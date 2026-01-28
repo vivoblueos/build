@@ -19,4 +19,5 @@ rust_abi_target = "riscv32"
 qemu_extra_args = []
 qemu_net_args = []
 qemu_block_args = []
-board_deps = []
+board_deps =
+    [ "//external/vendor/esp-bootloader-esp-idf-0.4.0:esp_bootloader_esp_idf" ]
