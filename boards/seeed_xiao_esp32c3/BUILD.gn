@@ -15,10 +15,21 @@
 import("//build/default_targets.gni")
 import("//build/templates/board.gni")
 
+_sysroot = exec_script("//build/scripts/get_sysroot.py",
+                       [ "riscv-none-elf-gcc" ],
+                       "string")
+
 blueos_board("seeed_xiao_esp32c3") {
   kernel_config = {
     _linker_script = "//kernel/kernel/src/boards/${board}/link.x"
-    cflags = []
+    cflags = [
+      "--static",
+      "-fshort-enums",
+      "-fsigned-char",
+      "-nostdlib",
+      "-isystem",
+      "${_sysroot}/include", 
+    ]
     ldflags = [
       "-nostartfiles",
       "-Wl,-gc-sections",
