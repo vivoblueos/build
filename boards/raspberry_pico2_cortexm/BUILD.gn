@@ -76,6 +76,7 @@ blueos_board("raspberry_pico2_cortexm") {
   default = [
     "//apps/shell",
     "//apps/example/blinky:blinky_example",
+    "//kernel/adapter/thread_metric:test_images",
   ]
   check_all = []
 }
