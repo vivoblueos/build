@@ -44,6 +44,7 @@ blueos_board("raspberry_pico2_cortexm") {
       "-Wl,-T" + rebase_path(_linker_script),
     ]
     rustflags = [
+      "-Ctarget-cpu=cortex-m33",
       "--cfg",
       "target_board=\"raspberry_pico2_cortexm\"",
       "--cfg",
