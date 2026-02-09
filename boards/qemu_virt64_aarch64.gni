@@ -45,6 +45,8 @@ qemu_block_args = [
 board_deps = [
   "//external/vendor/arm-gic-0.4.0:arm_gic",
   "//external/vendor/flat_device_tree-3.1.1:flat_device_tree",
+  "//external/vendor/semihosting-0.1.20:semihosting",
   "//external/vendor/smoltcp-0.12.0:smoltcp",
+  "//external/vendor/unwinding-0.2.4:unwinding",
   "//external/vendor/virtio-drivers-0.11.0:virtio_drivers",
 ]
