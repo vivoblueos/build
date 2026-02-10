@@ -178,6 +178,10 @@ def main():
         help=
         'Specify board to test. If not provided, will test all types in BOARDS'
     )
+    parser.add_argument('--setup_only',
+                        action='store_true',
+                        default=False,
+                        help='Setup output directories of boards only')
     parser.add_argument('repo_paths',
                         nargs='*',
                         help='Repository paths to check')
@@ -200,6 +204,12 @@ def main():
                                          DIRECT_SYSCALL_HANDLER_FLAGS):
             config = Config().set_build_type(profile[0]).set_board(
                 profile[1]).set_direct_syscall_handler(profile[2])
+            if args.setup_only:
+                rc = Runner(config).run_gn_gen()
+                if rc != 0:
+                    LOGGER.error(f'Failed to setup with {profile}')
+                    return rc
+                continue
             rc = Runner(config).run()
             if rc != 0:
                 LOGGER.error(f'Failed to run with {profile}')
