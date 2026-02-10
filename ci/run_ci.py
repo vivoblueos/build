@@ -91,6 +91,8 @@ class Runner(object):
         basename = f'{self.config.board}.{self.config.build_type}'
         if self.config.direct_syscall_handler:
             basename += '.dsc'
+        else:
+            basename += '.swi'
         return os.path.join('out', basename)
 
     def make_gn_args_str(self):
