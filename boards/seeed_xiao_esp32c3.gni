@@ -24,6 +24,6 @@ qemu_extra_args = []
 qemu_net_args = []
 qemu_block_args = []
 board_deps = [
-  "//hal_espressif",
-  "//hal_espressif:hal_espressif_rs",
+  "//esp-idf:hal_espressif",
+  "//esp-idf:hal_espressif_rs",
 ]
