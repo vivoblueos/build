@@ -28,13 +28,19 @@ blueos_board("seeed_xiao_esp32c3") {
       "-fsigned-char",
       "-nostdlib",
       "-isystem",
-      "${_sysroot}/include", 
+      "${_sysroot}/include",
     ]
     ldflags = [
       "-nostartfiles",
       "-Wl,-gc-sections",
       "-Wl,-T" + rebase_path(_linker_script),
       "-Wl,-z,norelro",
+      "-T" +
+          rebase_path("//esp-idf/components/esp_rom/esp32c3/ld/esp32c3.rom.ld"),
+      "-T" + rebase_path(
+              "//esp-idf/components/esp_rom/esp32c3/ld/esp32c3.rom.api.ld"),
+      "-T" + rebase_path(
+              "//esp-idf/components/soc/esp32c3/ld/esp32c3.peripherals.ld"),
     ]
     rustflags = [
       "--cfg",
@@ -61,8 +67,6 @@ blueos_board("seeed_xiao_esp32c3") {
       "-Clink-arg=-Wl,-z,norelro",
     ]
   }
-  default = [
-    "//apps/shell:shell",
-  ]
+  default = [ "//apps/shell:shell" ]
   check_all = []
 }
