@@ -1,4 +1,4 @@
-# Build BlueOS kernel via GN
+# Build the BlueKernel via GN
 
-We are using GN to build BlueOS kernel. This repo contains toolchain and flag configuration to
-build BlueOS kernel across multiple platforms.
+We are using GN to build the BlueKernel. This repo contains toolchain and flag configuration to
+build the BlueKernel across multiple platforms.
