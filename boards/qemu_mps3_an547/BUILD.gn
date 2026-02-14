@@ -31,6 +31,11 @@ blueos_board("qemu_mps3_an547") {
     _linker_script = rebase_path("${target_gen_dir}/link.pre.ld")
     cflags = [
       "--target=thumbv8m.main-none-eabihf",
+      "-mthumb",
+      "-mcpu=cortex-m55",
+      "-march=armv8.1-m.main+mve.fp+fp.dp",
+      "-mfpu=fpv5-d16",
+      "-mfloat-abi=hard",
       "--static",
       "-fshort-enums",
       "-fsigned-char",
@@ -39,6 +44,11 @@ blueos_board("qemu_mps3_an547") {
       "${_sysroot}/include",
     ]
     ldflags = [
+      "-mthumb",
+      "-mcpu=cortex-m55",
+      "-march=armv8.1-m.main+mve.fp+fp.dp",
+      "-mfpu=fpv5-d16",
+      "-mfloat-abi=hard",
       "-nostartfiles",
       "-Wl,-gc-sections",
       "-Wl,-T" + rebase_path(_linker_script),

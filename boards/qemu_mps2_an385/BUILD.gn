@@ -31,6 +31,9 @@ blueos_board("qemu_mps2_an385") {
     _linker_script = rebase_path("${target_gen_dir}/link.pre.ld")
     cflags = [
       "--target=thumbv7m-none-eabi",
+      "-mthumb",
+      "-march=armv7e-m",
+      "-mcpu=cortex-m3",
       "--static",
       "-fshort-enums",
       "-fsigned-char",
@@ -39,6 +42,9 @@ blueos_board("qemu_mps2_an385") {
       "${_sysroot}/include",
     ]
     ldflags = [
+      "-mthumb",
+      "-march=armv7e-m",
+      "-mcpu=cortex-m3",
       "-nostartfiles",
       "-Wl,-gc-sections",
       "-Wl,-T" + rebase_path(_linker_script),
