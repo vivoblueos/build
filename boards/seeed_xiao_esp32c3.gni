@@ -23,7 +23,4 @@ rust_abi_target = "riscv32"
 qemu_extra_args = []
 qemu_net_args = []
 qemu_block_args = []
-board_deps = [
-  "//esp-idf:hal_espressif",
-  "//esp-idf:hal_espressif_rs",
-]
+board_deps = []
