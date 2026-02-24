@@ -55,7 +55,7 @@ config("debug") {
              "-fno-omit-frame-pointer",
              "-fdiagnostics-color=always",
            ] + _common_cflags
-  cflags_c = [ "-std=c23" ]
+  cflags_c = [ "-std=c11" ]
   rustflags = [
                 "-Copt-level=1",
                 "-Cforce-frame-pointers=yes",
