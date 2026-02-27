@@ -35,8 +35,6 @@ blueos_board("seeed_xiao_esp32c3") {
       "-Wl,-gc-sections",
       "-Wl,-T" + rebase_path(_linker_script),
       "-Wl,-z,norelro",
-      "-T" +
-          rebase_path("//esp-idf/components/esp_rom/esp32c3/ld/esp32c3.rom.ld"),
     ]
     rustflags = [
       "--cfg",
