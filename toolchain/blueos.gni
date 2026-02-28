@@ -86,16 +86,16 @@ template("gen_esp32_image") {
   img_out_dir = get_label_info(elf, "root_out_dir")
   img_name = get_label_info(elf, "name")
   out_dir = "${img_out_dir}/bin"
-
-  action("${target_name}_app") {
+  app_img_name = "${target_name}_app"
+  action("${app_img_name}") {
     script = "//build/scripts/gen_esp32_image.py"
-    outputs = [ "${out_dir}/${target_name}_app.img" ]
+    outputs = [ "${out_dir}/${app_img_name}.img" ]
     args = [
       "elf2image",
       "--chip",
       chip,
       "-o",
-      rebase_path("${out_dir}/${target_name}.img"),
+      rebase_path("${out_dir}/${app_img_name}.img"),
       rebase_path("${out_dir}/${img_name}"),
     ]
   }
@@ -103,7 +103,7 @@ template("gen_esp32_image") {
   action("${target_name}") {
     script = "//build/scripts/gen_esp32_image.py"
     outputs = [ "${out_dir}/${target_name}" ]
-    inputs = get_target_outputs(":${target_name}_app")
+    inputs = get_target_outputs(":${app_img_name}")
     args = [
       "merge_bin",
       "--chip",
@@ -117,7 +117,7 @@ template("gen_esp32_image") {
       "--output",
       rebase_path("${out_dir}/${target_name}"),
     ]
-    deps += [ ":${target_name}_app" ]
+    deps += [ ":${app_img_name}" ]
   }
 }
 
