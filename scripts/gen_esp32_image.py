@@ -17,6 +17,8 @@
 import argparse
 import os
 import sys
+import urllib.parse
+import urllib.request
 
 from esptool import arg_auto_chunk_size, arg_auto_int
 from esptool.cmds import elf2image, merge_bin
@@ -299,6 +301,29 @@ def run_elf2image(args: argparse.Namespace) -> int:
 
 
 def run_merge_bin(args: argparse.Namespace) -> int:
+    output_dir = os.path.dirname(os.path.abspath(args.output)) or os.getcwd()
+
+    def is_url(value: str) -> bool:
+        parsed = urllib.parse.urlparse(value)
+        return parsed.scheme in ("http", "https") and bool(parsed.netloc)
+
+    def download_if_url(value: str, default_name: str) -> str:
+        if not is_url(value):
+            return value
+        parsed = urllib.parse.urlparse(value)
+        name = os.path.basename(parsed.path) or default_name
+        dest_path = os.path.join(output_dir, name)
+        os.makedirs(output_dir, exist_ok=True)
+        try:
+            urllib.request.urlretrieve(value, dest_path)
+        except Exception as exc:
+            raise SystemExit(f"Failed to download {value}: {exc}") from exc
+        return dest_path
+
+    args.bootloader = download_if_url(args.bootloader, "bootloader.bin")
+    args.partition_table = download_if_url(args.partition_table,
+                                           "partition_table.bin")
+
     input_pairs = [
         (args.bootloader_offset, args.bootloader),
         (args.partition_table_offset, args.partition_table),
