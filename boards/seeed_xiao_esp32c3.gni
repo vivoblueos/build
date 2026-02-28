@@ -24,5 +24,7 @@ qemu_extra_args = []
 qemu_block_interface = "mtd"
 qemu_net_args = []
 qemu_block_args = []
+qemu_esp32_bootloader_bin = "https://github.com/xuchang-vivo/build/releases/download/assert/bootloader.bin"
+qemu_esp32_partition_table_bin = "https://github.com/xuchang-vivo/build/releases/download/assert/partition-table.bin"
 qemu_use_esp32_loader = true
 board_deps = []
