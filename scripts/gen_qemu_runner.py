@@ -30,16 +30,16 @@ dd if=/dev/zero of={block_img} bs=1M count={block_size}
 """
 
 TEST = r"""
-exec {qemu} {semihosting} -M {machine} {qemu_args} {block_args} {net_args} -kernel {image} -nographic -serial \
+exec {qemu} {semihosting} -M {machine} {qemu_args} {block_args} {net_args} {image} -nographic -serial \
        file:{logfile} -d int,cpu_reset,guest_errors,unimp -D {syslog}
 """
 
 DBG = r"""
-exec {qemu} {semihosting} -M {machine} {qemu_args} {block_args} {net_args} -kernel {image} -nographic -s -S
+exec {qemu} {semihosting} -M {machine} {qemu_args} {block_args} {net_args} {image} -nographic -s -S
 """
 
 DEFAULT = r"""
-exec {qemu} {semihosting} -M {machine} {qemu_args} {block_args} {net_args} -kernel {image} -nographic
+exec {qemu} {semihosting} -M {machine} {qemu_args} {block_args} {net_args} {image} -nographic
 """
 
 
@@ -56,13 +56,15 @@ def do_gen(config, template, suffix='', need_log=False):
         f.write(r"#!/bin/bash")
 
         block_args = ''
-        if config.block_img:
+        if config.block_img and not config.use_esp32_loader:
             dirname = os.path.dirname(config.block_img)
             os.makedirs(dirname, exist_ok=True)
             f.write(
                 GEN_BLOCK_IMG.format(block_img=config.block_img,
                                      block_size=config.block_size))
-            block_args += f'-drive file={config.block_img},if=none,format=raw,id=hd'
+            block_args += f'-drive file={config.block_img},if={config.block_interface},format=raw,id=hd'
+        elif config.use_esp32_loader:
+            block_args += f'-drive file={config.image},if={config.block_interface},format=raw'
 
         if config.block_args:
             block_args += ' ' + config.block_args
@@ -78,7 +80,8 @@ def do_gen(config, template, suffix='', need_log=False):
                     if not config.qemu_args != "" else config.qemu_args,
                     block_args=block_args,
                     net_args='' if not config.net_args else config.net_args,
-                    image=os.path.abspath(config.image)))
+                    image='' if config.use_esp32_loader else '-kernel ' +
+                    os.path.abspath(config.image)))
         else:
             f.write(
                 template.format(
@@ -92,7 +95,8 @@ def do_gen(config, template, suffix='', need_log=False):
                     net_args='' if not config.net_args else config.net_args,
                     logfile=logfile,
                     syslog=syslog,
-                    image=os.path.abspath(config.image)))
+                    image='' if config.use_esp32_loader else '-kernel ' +
+                    os.path.abspath(config.image)))
     os.chmod(out_file, 0o755)
     print(f'Generated {out_file}')
 
@@ -121,6 +125,9 @@ def main():
     parser.add_argument("--block_size",
                         help="Specify block image size",
                         default=32)
+    parser.add_argument("--block_interface",
+                        help="Specify block image interface",
+                        default="none")
     parser.add_argument("--block_args",
                         help="Args for block device",
                         default="")
@@ -129,6 +136,7 @@ def main():
                         help="Enable semihosting",
                         action='store_true',
                         default=False)
+    parser.add_argument("--use_esp32_loader", required=False)
     parser.add_argument("image", help="Image file path")
     config = parser.parse_args()
     return gen(config)
