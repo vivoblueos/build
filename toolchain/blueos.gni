@@ -69,6 +69,58 @@ template("gen_probe_runner") {
   }
 }
 
+template("gen_esp32_image") {
+  forward_variables_from(invoker, "*", [ "args" ])
+  assert(defined(chip))
+  assert(defined(elf))
+
+  # FIXME: bootloader and partition_table may be abs_path or url
+  # So build system can't track their changes and re-run the action when they are updated.
+  assert(defined(bootloader))
+  assert(defined(partition_table))
+  if (!defined(deps)) {
+    deps = [ elf ]
+  } else {
+    deps += [ elf ]
+  }
+  img_out_dir = get_label_info(elf, "root_out_dir")
+  img_name = get_label_info(elf, "name")
+  out_dir = "${img_out_dir}/bin"
+  app_img_name = "${target_name}_app"
+  action("${app_img_name}") {
+    script = "//build/scripts/gen_esp32_image.py"
+    outputs = [ "${out_dir}/${app_img_name}.img" ]
+    args = [
+      "elf2image",
+      "--chip",
+      chip,
+      "-o",
+      rebase_path("${out_dir}/${app_img_name}.img"),
+      rebase_path("${out_dir}/${img_name}"),
+    ]
+  }
+
+  action("${target_name}") {
+    script = "//build/scripts/gen_esp32_image.py"
+    outputs = [ "${out_dir}/${target_name}" ]
+    inputs = get_target_outputs(":${app_img_name}")
+    args = [
+      "merge_bin",
+      "--chip",
+      chip,
+      "--bootloader",
+      bootloader,
+      "--partition_table",
+      partition_table,
+      "--app_image",
+      rebase_path(inputs[0]),
+      "--output",
+      rebase_path("${out_dir}/${target_name}"),
+    ]
+    deps += [ ":${app_img_name}" ]
+  }
+}
+
 template("gen_qemu_runner") {
   forward_variables_from(invoker, "*", [ "args" ])
   assert(defined(img))
@@ -106,6 +158,20 @@ template("gen_qemu_runner") {
       target_name,
       rebase_path(img_path),
     ]
+
+    if (defined(block_interface)) {
+      args += [
+        "--block_interface",
+        block_interface,
+      ]
+    }
+
+    if (defined(use_esp32_loader) && use_esp32_loader == true) {
+      args += [
+        "--use_esp32_loader",
+        "1",
+      ]
+    }
 
     if (semihosting == true) {
       args += [ "--semihosting" ]
