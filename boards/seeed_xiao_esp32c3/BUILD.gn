@@ -62,5 +62,10 @@ blueos_board("seeed_xiao_esp32c3") {
     ]
   }
   default = [ "//apps/shell:shell" ]
-  check_all = []
+  _check_all = check_all_on_virtual_board + clippy_all_on_virtual_board
+  check_all = filter_exclude(_check_all,
+                             [
+                               "//kernel/adapter*",
+                               "//kernel/loader*",
+                             ])
 }
