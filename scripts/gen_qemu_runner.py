@@ -74,7 +74,7 @@ def do_gen(config, template, suffix='', need_log=False):
                 template.format(
                     qemu=config.qemu,
                     semihosting='' if not config.semihosting else
-                    '-accel tcg -semihosting-config enable=on',
+                    '-accel tcg -icount shift=0 -semihosting-config enable=on',
                     machine=machine,
                     qemu_args=''
                     if not config.qemu_args != "" else config.qemu_args,
@@ -88,7 +88,7 @@ def do_gen(config, template, suffix='', need_log=False):
                     qemu=config.qemu,
                     machine=machine,
                     semihosting='' if not config.semihosting else
-                    '-accel tcg -semihosting-config enable=on',
+                    '-accel tcg -icount shift=0 -semihosting-config enable=on',
                     qemu_args=''
                     if config.qemu_args != "" else config.qemu_args,
                     block_args=block_args,
