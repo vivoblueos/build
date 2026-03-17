@@ -1,0 +1,117 @@
+# Copyright (c) 2026 vivo Mobile Communication Co., Ltd.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#       http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+import("//build/templates/bindgen.gni")
+import("//build/templates/build_kernel.gni")
+import("//build/templates/rust.gni")
+
+template("build_app") {
+  build_kernel("${target_name}_kernel") {
+    output_dir = invoker.output_dir
+    inputs = invoker.inputs
+    kconfig_path = invoker.kconfig_path
+    build_args = invoker.kernel_build_args
+  }
+
+  # build_rust("${target_name}") {
+
+  # }
+}
+
+# template("build_app") {
+#   app_name = "${target_name}"
+#   action("${app_name}_artifacts") {
+#     script = "//kernel/kconfig/src/generate_artifacts.py"
+#     inputs = invoker.inputs
+#     if (defined(invoker.app_conf)) {
+#       inputs += [ invoker.app_conf ]
+#     }
+#     outputs = [
+#       "${invoker.output_dir}/${app_name}_autoconf.h",
+#       "${invoker.output_dir}/${app_name}_rustflags.txt",
+#     ]
+#     args = [
+#       "--kconfig",
+#       rebase_path(invoker.kconfig_path),
+#       "--board",
+#       "${board}",
+#       "--build_type",
+#       "${build_type}",
+#       "--target_name",
+#       "${app_name}",
+#       "--output_dir",
+#       rebase_path(invoker.output_dir),
+#     ]
+#     if (defined(invoker.app_conf)) {
+#       args += [ "--app_conf" ]
+#       args += [ rebase_path(invoker.app_conf) ]
+#     }
+#   }
+
+#   bindgen("${app_name}_header") {
+#     bindgen_flags = [
+#       "--use-core",
+#       "--ctypes-prefix",
+#       "core::ffi",
+#       "--no-layout-tests",
+#     ]
+#     sources = [ "${invoker.output_dir}/${app_name}_autoconf.h" ]
+#     deps = [ ":${app_name}_artifacts" ]
+#   }
+
+#   action("${app_name}_parse_const") {
+#     script = "//kernel/kconfig/src/parse_const.py"
+#     inputs = get_target_outputs(":${app_name}_header")
+#     output = rebase_path("${invoker.output_dir}/${app_name}_kconfig.rs")
+#     input = rebase_path(inputs[0])
+#     outputs = [ "${invoker.output_dir}/${app_name}_kconfig.rs" ]
+#     args = [
+#       "--src",
+#       "${input}",
+#       "--out",
+#       "${output}",
+#     ]
+#     deps = [ ":${app_name}_header" ]
+#   }
+
+#   build_rust("${app_name}_kconfig") {
+#     crate_name = "blueos_kconfig"
+#     crate_type = "rlib"
+#     sources = get_target_outputs(":${app_name}_parse_const")
+#     edition = "2021"
+#     deps = [ ":${app_name}_parse_const" ]
+#   }
+
+#   build_rust("${app_name}_bluekernel") {
+#     rustflags_file = rebase_path("${invoker.output_dir}/${app_name}_rustflags.txt")
+#     forward_variables_from(invoker.kernel_build_args, "*")
+#     if (defined(rustflags)) {
+#       rustflags += [ "@${rustflags_file}" ]
+#     } else {
+#       rustflags = [ "@${rustflags_file}" ]
+#     }
+#     deps += [ ":${app_name}_kconfig" ]
+#     if (defined(extra_configs)) {
+#       configs += extra_configs
+#     }
+#     if (defined(extra_public_configs)) {
+#       public_configs += extra_public_configs
+#     }
+#   }
+
+#   build_rust("${target_name}") {
+#     forward_variables_from(invoker.build_args, "*")
+#     deps += [ ":${app_name}_bluekernel" ]
+#   }
+# }
