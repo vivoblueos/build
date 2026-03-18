@@ -26,7 +26,6 @@ template("reload_autoconf_and_build") {
                              "autoconf_path",
                              "app_conf",
                            ])
-    output_name = "${app_name}"
   }
 
   action(app_name) {
