@@ -36,6 +36,7 @@ template("build_rust") {
                            "rustenv",
                            "sources",
                            "inputs",
+                           "output_name",
                            "libs",
                            "lib_dirs",
                            "crate_type",
