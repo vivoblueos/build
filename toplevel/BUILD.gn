@@ -44,6 +44,12 @@ if (coverage) {
   }
 }
 
+if (current_toolchain == default_toolchain) {
+  pool("console") {
+    depth = 1
+  }
+}
+
 group("run_gnrt") {
   deps = [ "//external/gnrt:gen_gnrt" ]
 }
