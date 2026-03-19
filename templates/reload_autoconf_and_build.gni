@@ -22,10 +22,10 @@ template("reload_autoconf_and_build") {
     forward_variables_from(invoker,
                            "*",
                            [
-                            "app_conf",
-                            "configs",
+                             "app_conf",
+                             "configs",
                            ])
-      configs += invoker.configs
+    configs += invoker.configs
   }
 
   action(app_name) {
@@ -35,9 +35,7 @@ template("reload_autoconf_and_build") {
     inputs += invoker.app_conf
     defconfig_list = []
     foreach(defconfig, inputs) {
-      defconfig_list += [
-        rebase_path(defconfig)
-      ]
+      defconfig_list += [ rebase_path(defconfig) ]
     }
     defconfig_files = string_join(",", defconfig_list)
     outputs = [

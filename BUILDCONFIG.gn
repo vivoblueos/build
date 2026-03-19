@@ -26,7 +26,8 @@ declare_args() {
 }
 
 declare_args() {
-    defconfig_files = rebase_path("//kernel/kconfig/config/${board}/${build_type}/defconfig")
+  defconfig_files =
+      rebase_path("//kernel/kconfig/config/${board}/${build_type}/defconfig")
 }
 
 # Define boolean flags for convenience.
