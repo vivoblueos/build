@@ -17,38 +17,47 @@ import("//build/templates/rust.gni")
 template("reload_autoconf_and_build") {
   pass = "${target_name}_pass"
   app_name = "${target_name}"
+
   build_rust(pass) {
     forward_variables_from(invoker,
                            "*",
                            [
-                             "inputs",
-                             "kconfig_path",
-                             "autoconf_path",
-                             "app_conf",
+                            "app_conf",
+                            "configs",
                            ])
+      configs += invoker.configs
   }
 
   action(app_name) {
     script = "//build/scripts/reload_autoconf_and_build.py"
     pool = "//:console($default_toolchain)"
-    inputs = invoker.inputs
-    outputs = [ "${target_gen_dir}/${app_name}.stamp" ]
+    inputs = [ "${root_gen_dir}/.config" ]
+    inputs += invoker.app_conf
+    defconfig_list = []
+    foreach(defconfig, inputs) {
+      defconfig_list += [
+        rebase_path(defconfig)
+      ]
+    }
+    defconfig_files = string_join(",", defconfig_list)
+    outputs = [
+      "${root_build_dir}/bin/${app_name}",
+      "${root_build_dir}/bin/${app_name}.bin",
+      "${root_build_dir}/${app_name}.stamp",
+    ]
     args = [
+      "--defconfig_files",
+      defconfig_files,
       "--board",
       "${board}",
-      "--kconfig",
-      rebase_path(invoker.kconfig_path),
-      "--autoconf",
-      rebase_path(invoker.autoconf_path),
-      "-C",
-      rebase_path("${root_build_dir}"),
+      "--build_type",
+      "${build_type}",
+      "--ninja_dir",
+      rebase_path("${target_gen_dir}"),
+      "--output_dir",
+      rebase_path("${root_build_dir}/bin"),
+      "${pass}",
     ]
-
-    if (defined(invoker.app_conf)) {
-      args += [ "--app_conf" ]
-      args += [ rebase_path(invoker.app_conf) ]
-    }
-    args += [ "${pass}" ]
     deps = [ "//kernel/kconfig:generate_autoconf" ]
   }
 }
