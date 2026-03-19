@@ -59,7 +59,7 @@ if __name__ == "__main__":
         gen_ninja_workspace(args.ninja_dir, args.board, args.build_type,
                             args.defconfig_files)
         build_with_ninja(args.ninja_dir, args.target_name)
-        target_name = args.target_name[:len("_pass")]
+        target_name = args.target_name[:-len("_pass")]
         bin_file = args.ninja_dir + '/bin/' + args.target_name + '.bin'
         cped_bin_file = args.output_dir + '/' + target_name + '.bin'
         elf_file = args.ninja_dir + '/bin/' + args.target_name
