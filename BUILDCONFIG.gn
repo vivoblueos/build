@@ -25,6 +25,11 @@ declare_args() {
   board = "none"
 }
 
+declare_args() {
+  defconfig_files =
+      rebase_path("//kernel/kconfig/config/${board}/${build_type}/defconfig")
+}
+
 # Define boolean flags for convenience.
 coverage = "${build_type}" == "coverage"
 profile = "${build_type}" == "profile"
