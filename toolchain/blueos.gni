@@ -192,20 +192,6 @@ template("gen_qemu_runner") {
       rebase_path(img_path),
     ]
 
-    if (defined(block_interface)) {
-      args += [
-        "--block_interface",
-        block_interface,
-      ]
-    }
-
-    if (defined(use_esp32_loader) && use_esp32_loader == true) {
-      args += [
-        "--use_esp32_loader",
-        "1",
-      ]
-    }
-
     if (semihosting == true) {
       args += [ "--semihosting" ]
     }

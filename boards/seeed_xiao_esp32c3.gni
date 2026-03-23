@@ -21,7 +21,6 @@ qemu_exe = "qemu-system-riscv32"
 qemu_machine = "esp32c3"
 rust_abi_target = "riscv32"
 qemu_extra_args = []
-qemu_block_interface = "mtd"
 qemu_net_args = []
 qemu_block_args = []
 qemu_esp32_bootloader_bin = "https://github.com/vivoblueos/toolchain/releases/download/v0.8.0/esp32c3-bootloader.bin"
