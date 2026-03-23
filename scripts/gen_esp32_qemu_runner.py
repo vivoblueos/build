@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-# Copyright (c) 2025 vivo Mobile Communication Co., Ltd.
+# Copyright (c) 2026 vivo Mobile Communication Co., Ltd.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,26 +14,21 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import argparse
 import os
 import sys
-import argparse
-
-GEN_BLOCK_IMG = r"""
-rm -f {block_img}
-dd if=/dev/zero of={block_img} bs=1M count={block_size}
-"""
 
 TEST = r"""
-exec {qemu} {semihosting} -M {machine} {qemu_args} {block_args} {net_args} -kernel {image} -nographic -serial \
+exec {qemu} {semihosting} -M {machine} {qemu_args} {block_args} {net_args} -nographic -serial \
        file:{logfile} -d int,cpu_reset,guest_errors,unimp -D {syslog}
 """
 
 DBG = r"""
-exec {qemu} {semihosting} -M {machine} {qemu_args} {block_args} {net_args} -kernel {image} -nographic -s -S
+exec {qemu} {semihosting} -M {machine} {qemu_args} {block_args} {net_args} -nographic -s -S
 """
 
 DEFAULT = r"""
-exec {qemu} {semihosting} -M {machine} {qemu_args} {block_args} {net_args} -kernel {image} -nographic
+exec {qemu} {semihosting} -M {machine} {qemu_args} {block_args} {net_args} -nographic
 """
 
 
@@ -49,15 +44,8 @@ def do_gen(config, template, suffix='', need_log=False):
     with open(out_file, 'w') as f:
         f.write(r"#!/bin/bash")
 
-        block_args = ''
-        if config.block_img:
-            dirname = os.path.dirname(config.block_img)
-            os.makedirs(dirname, exist_ok=True)
-            f.write(
-                GEN_BLOCK_IMG.format(block_img=config.block_img,
-                                     block_size=config.block_size))
-            block_args += f'-drive file={config.block_img},if=none,format=raw,id=hd'
-
+        # ESP32 image is loaded as flash device instead of "-kernel".
+        block_args = f'-drive file={config.image},if=mtd,format=raw'
         if config.block_args:
             block_args += ' ' + config.block_args
 
@@ -71,8 +59,7 @@ def do_gen(config, template, suffix='', need_log=False):
                     qemu_args=''
                     if not config.qemu_args != "" else config.qemu_args,
                     block_args=block_args,
-                    net_args='' if not config.net_args else config.net_args,
-                    image=os.path.abspath(config.image)))
+                    net_args='' if not config.net_args else config.net_args))
         else:
             f.write(
                 template.format(
@@ -85,8 +72,7 @@ def do_gen(config, template, suffix='', need_log=False):
                     block_args=block_args,
                     net_args='' if not config.net_args else config.net_args,
                     logfile=logfile,
-                    syslog=syslog,
-                    image=os.path.abspath(config.image)))
+                    syslog=syslog))
     os.chmod(out_file, 0o755)
     print(f'Generated {out_file}')
 
@@ -99,7 +85,7 @@ def gen(config):
 
 def main():
     parser = argparse.ArgumentParser(
-        description='Generate QEMU runner script for BlueOS kernel image')
+        description='Generate QEMU runner script for BlueOS ESP32 image')
     parser.add_argument("--qemu",
                         help="Executable of QEMU emulator",
                         required=True)
@@ -111,10 +97,6 @@ def main():
                         required=True)
     parser.add_argument("--out_dir", help="Output directory", required=True)
     parser.add_argument("--qemu_args", help="Extra qmeu args", default="")
-    parser.add_argument("--block_img", help="Add block image", default="")
-    parser.add_argument("--block_size",
-                        help="Specify block image size",
-                        default=32)
     parser.add_argument("--block_args",
                         help="Args for block device",
                         default="")

@@ -70,6 +70,25 @@ FILL_FLASH_SIZE_CHOICES = [
 ]
 
 
+def is_url(value: str) -> bool:
+    parsed = urllib.parse.urlparse(value)
+    return parsed.scheme in ("http", "https") and bool(parsed.netloc)
+
+
+def download_if_url(value: str, output_dir: str, default_name: str) -> str:
+    if not is_url(value):
+        return value
+    parsed = urllib.parse.urlparse(value)
+    name = os.path.basename(parsed.path) or default_name
+    dest_path = os.path.join(output_dir, name)
+    os.makedirs(output_dir, exist_ok=True)
+    try:
+        urllib.request.urlretrieve(value, dest_path)
+    except Exception as exc:
+        raise SystemExit(f"Failed to download {value}: {exc}") from exc
+    return dest_path
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description="ESP32 image helpers using esptool")
@@ -292,6 +311,108 @@ def build_parser() -> argparse.ArgumentParser:
         default="16MB",
     )
     merge_parser.set_defaults(func=run_merge_bin)
+
+    build_image_parser = subparsers.add_parser(
+        "build_image",
+        help="Build merged ESP32 image from ELF, bootloader and partition table",
+    )
+    build_image_parser.add_argument("input", help="Input ELF file")
+    build_image_parser.add_argument(
+        "--output",
+        "-o",
+        required=True,
+        help="Merged output image path",
+    )
+    build_image_parser.add_argument(
+        "--bootloader",
+        required=True,
+        help="Bootloader image path",
+    )
+    build_image_parser.add_argument(
+        "--partition_table",
+        "--partition-table",
+        required=True,
+        help="Partition table image path",
+    )
+    build_image_parser.add_argument(
+        "--chip",
+        help="Target chip (default: esp32)",
+        default="esp32",
+    )
+    build_image_parser.add_argument(
+        "--bootloader_offset",
+        "--bootloader-offset",
+        type=arg_auto_int,
+        default=0,
+        help="Bootloader flash offset (default: 0)",
+    )
+    build_image_parser.add_argument(
+        "--partition_table_offset",
+        "--partition-table-offset",
+        type=arg_auto_int,
+        default=0x8000,
+        help="Partition table flash offset (default: 0x8000)",
+    )
+    build_image_parser.add_argument(
+        "--app_offset",
+        "--app-offset",
+        type=arg_auto_int,
+        default=0x10000,
+        help="Application flash offset (default: 0x10000)",
+    )
+    build_image_parser.add_argument(
+        "--format",
+        "-f",
+        choices=["raw", "uf2", "hex"],
+        default="raw",
+        help="Output format",
+    )
+    build_image_parser.add_argument(
+        "--chunk-size",
+        help="UF2 chunk size",
+        type=arg_auto_chunk_size,
+        default=None,
+    )
+    build_image_parser.add_argument(
+        "--md5-disable",
+        action="store_true",
+        help="Disable MD5 checksum in UF2 output",
+    )
+    build_image_parser.add_argument(
+        "--flash_freq",
+        "-ff",
+        help="SPI flash frequency",
+        choices=["keep"] + FLASH_FREQ_CHOICES,
+        default=os.environ.get("ESPTOOL_FF", "keep"),
+    )
+    build_image_parser.add_argument(
+        "--flash_mode",
+        "-fm",
+        help="SPI flash mode",
+        choices=["keep"] + FLASH_MODE_CHOICES,
+        default=os.environ.get("ESPTOOL_FM", "keep"),
+    )
+    build_image_parser.add_argument(
+        "--flash_size",
+        "-fs",
+        help="SPI flash size",
+        choices=["keep"] + FLASH_SIZE_CHOICES,
+        default=os.environ.get("ESPTOOL_FS", "keep"),
+    )
+    build_image_parser.add_argument(
+        "--target-offset",
+        "-t",
+        help="Target offset where the output file will be flashed",
+        type=arg_auto_int,
+        default=0,
+    )
+    build_image_parser.add_argument(
+        "--fill-flash-size",
+        help="Pad output to this flash size",
+        choices=FILL_FLASH_SIZE_CHOICES,
+        default="16MB",
+    )
+    build_image_parser.set_defaults(func=run_build_image)
     return parser
 
 
@@ -302,26 +423,9 @@ def run_elf2image(args: argparse.Namespace) -> int:
 
 def run_merge_bin(args: argparse.Namespace) -> int:
     output_dir = os.path.dirname(os.path.abspath(args.output)) or os.getcwd()
-
-    def is_url(value: str) -> bool:
-        parsed = urllib.parse.urlparse(value)
-        return parsed.scheme in ("http", "https") and bool(parsed.netloc)
-
-    def download_if_url(value: str, default_name: str) -> str:
-        if not is_url(value):
-            return value
-        parsed = urllib.parse.urlparse(value)
-        name = os.path.basename(parsed.path) or default_name
-        dest_path = os.path.join(output_dir, name)
-        os.makedirs(output_dir, exist_ok=True)
-        try:
-            urllib.request.urlretrieve(value, dest_path)
-        except Exception as exc:
-            raise SystemExit(f"Failed to download {value}: {exc}") from exc
-        return dest_path
-
-    args.bootloader = download_if_url(args.bootloader, "bootloader.bin")
-    args.partition_table = download_if_url(args.partition_table,
+    args.bootloader = download_if_url(args.bootloader, output_dir,
+                                      "bootloader.bin")
+    args.partition_table = download_if_url(args.partition_table, output_dir,
                                            "partition_table.bin")
 
     input_pairs = [
@@ -353,13 +457,63 @@ def run_merge_bin(args: argparse.Namespace) -> int:
     return 0
 
 
+def run_build_image(args: argparse.Namespace) -> int:
+    output_dir = os.path.dirname(os.path.abspath(args.output)) or os.getcwd()
+    os.makedirs(output_dir, exist_ok=True)
+    app_image = os.path.join(output_dir, f".{os.path.basename(args.output)}.app.img")
+    try:
+        elf_args = argparse.Namespace(
+            input=args.input,
+            output=app_image,
+            chip=args.chip,
+            flash_freq=os.environ.get("ESPTOOL_FF", None),
+            flash_mode=os.environ.get("ESPTOOL_FM", "qio"),
+            flash_size=os.environ.get("ESPTOOL_FS", "16MB"),
+            min_rev=0,
+            min_rev_full=0,
+            max_rev_full=65535,
+            secure_pad=False,
+            secure_pad_v2=False,
+            elf_sha256_offset=None,
+            append_digest=True,
+            use_segments=False,
+            flash_mmu_page_size=None,
+            pad_to_size=None,
+            ram_only_header=None,
+            version="1",
+        )
+        run_elf2image(elf_args)
+        merge_args = argparse.Namespace(
+            bootloader=args.bootloader,
+            partition_table=args.partition_table,
+            app_image=app_image,
+            output=args.output,
+            chip=args.chip,
+            bootloader_offset=args.bootloader_offset,
+            partition_table_offset=args.partition_table_offset,
+            app_offset=args.app_offset,
+            format=args.format,
+            chunk_size=args.chunk_size,
+            md5_disable=args.md5_disable,
+            flash_freq=args.flash_freq,
+            flash_mode=args.flash_mode,
+            flash_size=args.flash_size,
+            target_offset=args.target_offset,
+            fill_flash_size=args.fill_flash_size,
+        )
+        return run_merge_bin(merge_args)
+    finally:
+        if os.path.exists(app_image):
+            os.remove(app_image)
+
+
 def main():
     parser = build_parser()
     argv = sys.argv[1:]
     if not argv:
         parser.print_help()
         return 1
-    if argv[0] not in ("elf2image", "merge_bin"):
+    if argv[0] not in ("elf2image", "merge_bin", "build_image"):
         argv = ["elf2image"] + argv
     args = parser.parse_args(argv)
     if not hasattr(args, "func"):

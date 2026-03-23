@@ -69,15 +69,14 @@ template("gen_probe_runner") {
   }
 }
 
-template("gen_esp32_image") {
+template("gen_esp32_qemu_runner") {
   forward_variables_from(invoker, "*", [ "args" ])
-  assert(defined(chip))
   assert(defined(elf))
-
-  # FIXME: bootloader and partition_table may be abs_path or url
-  # So build system can't track their changes and re-run the action when they are updated.
+  assert(defined(chip))
   assert(defined(bootloader))
   assert(defined(partition_table))
+  assert(defined(qemu))
+  assert(defined(machine))
   if (!defined(deps)) {
     deps = [ elf ]
   } else {
@@ -85,39 +84,73 @@ template("gen_esp32_image") {
   }
   img_out_dir = get_label_info(elf, "root_out_dir")
   img_name = get_label_info(elf, "name")
+  img_path = "${img_out_dir}/bin/${img_name}"
   out_dir = "${img_out_dir}/bin"
-  app_img_name = "${target_name}_app"
-  action("${app_img_name}") {
-    script = "//build/scripts/gen_esp32_image.py"
-    outputs = [ "${out_dir}/${app_img_name}.img" ]
-    args = [
-      "elf2image",
-      "--chip",
-      chip,
-      "-o",
-      rebase_path("${out_dir}/${app_img_name}.img"),
-      rebase_path("${out_dir}/${img_name}"),
-    ]
+  esp32_img_action_name = "${target_name}_esp32_image"
+  esp32_img_path = "${out_dir}/${target_name}-esp32.img"
+  if (defined(semihosting)) {
+    semihosting = semihosting || coverage || profile
+  } else {
+    semihosting = coverage || profile
   }
-
-  action("${target_name}") {
+  action("${esp32_img_action_name}") {
     script = "//build/scripts/gen_esp32_image.py"
-    outputs = [ "${out_dir}/${target_name}" ]
-    inputs = get_target_outputs(":${app_img_name}")
+    outputs = [ esp32_img_path ]
     args = [
-      "merge_bin",
+      "build_image",
       "--chip",
       chip,
       "--bootloader",
       bootloader,
       "--partition_table",
       partition_table,
-      "--app_image",
-      rebase_path(inputs[0]),
       "--output",
-      rebase_path("${out_dir}/${target_name}"),
+      rebase_path(esp32_img_path),
+      rebase_path(img_path),
     ]
-    deps += [ ":${app_img_name}" ]
+  }
+
+  action(target_name) {
+    script = "//build/scripts/gen_esp32_qemu_runner.py"
+    inputs = get_target_outputs(":${esp32_img_action_name}")
+    deps += [ ":${esp32_img_action_name}" ]
+    outputs = [
+      "${out_dir}/${target_name}-qemu-dbg.sh",
+      "${out_dir}/${target_name}-qemu-test.sh",
+      "${out_dir}/${target_name}-qemu.sh",
+    ]
+    args = [
+      "--qemu",
+      qemu,
+      "--machine",
+      machine,
+      "--out_dir",
+      rebase_path(out_dir),
+      "--name",
+      target_name,
+      rebase_path(inputs[0]),
+    ]
+    if (semihosting == true) {
+      args += [ "--semihosting" ]
+    }
+    if (defined(qemu_args) && qemu_args != []) {
+      args += [
+        "--qemu_args",
+        string_join(" ", qemu_args),
+      ]
+    }
+    if (defined(block_args) && block_args != []) {
+      args += [
+        "--block_args",
+        string_join(" ", block_args),
+      ]
+    }
+    if (defined(net_args) && net_args != []) {
+      args += [
+        "--net_args",
+        string_join(" ", net_args),
+      ]
+    }
   }
 }
 
