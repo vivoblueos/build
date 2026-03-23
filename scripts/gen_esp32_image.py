@@ -314,7 +314,8 @@ def build_parser() -> argparse.ArgumentParser:
 
     build_image_parser = subparsers.add_parser(
         "build_image",
-        help="Build merged ESP32 image from ELF, bootloader and partition table",
+        help=
+        "Build merged ESP32 image from ELF, bootloader and partition table",
     )
     build_image_parser.add_argument("input", help="Input ELF file")
     build_image_parser.add_argument(
@@ -460,7 +461,8 @@ def run_merge_bin(args: argparse.Namespace) -> int:
 def run_build_image(args: argparse.Namespace) -> int:
     output_dir = os.path.dirname(os.path.abspath(args.output)) or os.getcwd()
     os.makedirs(output_dir, exist_ok=True)
-    app_image = os.path.join(output_dir, f".{os.path.basename(args.output)}.app.img")
+    app_image = os.path.join(output_dir,
+                             f".{os.path.basename(args.output)}.app.img")
     try:
         elf_args = argparse.Namespace(
             input=args.input,
