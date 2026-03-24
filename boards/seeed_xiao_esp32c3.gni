@@ -17,7 +17,7 @@ declare_args() {
 }
 
 board_default_toolchain = "//build/toolchain:blueos_riscv32imc"
-qemu_exe = "qemu-system-riscv32"
+qemu_exe = "qemu-esp32-riscv32"
 qemu_machine = "esp32c3"
 rust_abi_target = "riscv32"
 qemu_extra_args = []
