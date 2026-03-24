@@ -14,7 +14,7 @@
 
 board_default_toolchain = "//build/toolchain:blueos_aarch64"
 qemu_exe = ""
-machine = ""
+qemu_machine = ""
 rust_abi_target = "aarch64-unknown-none"
 qemu_extra_args = []
 qemu_net_args = []
