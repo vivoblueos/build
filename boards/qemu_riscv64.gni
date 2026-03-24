@@ -14,7 +14,7 @@
 
 board_default_toolchain = "//build/toolchain:blueos_riscv64"
 qemu_exe = "qemu-system-riscv64"
-machine = "virt"
+qemu_machine = "virt"
 rust_abi_target = "riscv64"
 qemu_extra_args = [
   "-bios",
