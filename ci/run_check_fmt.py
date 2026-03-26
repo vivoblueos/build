@@ -21,18 +21,31 @@ import shutil
 from pathlib import Path
 from typing import List, Tuple
 import platform
+import xml.etree.ElementTree as ET
 
 
 def get_default_branch(repo: str) -> str:
-    """Detect the default branch (main or master) from the remote"""
-    for branch in ("main", "master"):
-        result = subprocess.run(
-            ["git", "ls-remote", "--heads", "origin", branch],
-            capture_output=True,
-            text=True,
-            cwd=repo)
-        if result.returncode == 0 and result.stdout.strip():
-            return branch
+    """Get default branch from manifest.xml, checking project revision then default revision"""
+    manifest_path = Path(repo).parent / ".repo" / "manifests" / "manifest.xml"
+    if manifest_path.exists():
+        tree = ET.parse(manifest_path)
+        root = tree.getroot()
+
+        # Get project name from repo path
+        repo_name = Path(repo).name
+
+        # Check project-specific revision first
+        for project in root.findall("project"):
+            if project.get("name") == repo_name:
+                revision = project.get("revision")
+                if revision:
+                    return revision
+
+        # Fall back to default revision
+        default = root.find("default")
+        if default is not None:
+            return default.get("revision", "main")
+
     return "main"
 
 
