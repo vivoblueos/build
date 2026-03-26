@@ -14,9 +14,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import argparse
 import subprocess
 import shutil
 import sys
+from pathlib import Path
 from typing import List, Tuple
 
 
@@ -69,3 +71,26 @@ def check_license(repo_to_check):
         raise Exception("License check failed!!!")
     print("✅ All repos licenses are checked!")
     sys.stdout.flush()
+
+
+def main():
+    kernel_root = str(Path(__file__).resolve().parent.parent.parent)
+
+    parser = argparse.ArgumentParser(
+        description='Check license headers for BlueKernel repos')
+    parser.add_argument(
+        'repo_paths',
+        nargs='*',
+        default=[kernel_root],
+        help=
+        'Repository paths to check (default: kernel repo root derived from script location)'
+    )
+    args = parser.parse_args()
+    try:
+        check_license(args.repo_paths)
+    except Exception as e:
+        sys.exit(1)
+
+
+if __name__ == '__main__':
+    main()
