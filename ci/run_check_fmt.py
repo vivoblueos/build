@@ -14,6 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import argparse
 import subprocess
 import sys
 import shutil
@@ -22,17 +23,32 @@ from typing import List, Tuple
 import platform
 
 
+def get_default_branch(repo: str) -> str:
+    """Detect the default branch (main or master) from the remote"""
+    for branch in ("main", "master"):
+        result = subprocess.run(
+            ["git", "ls-remote", "--heads", "origin", branch],
+            capture_output=True,
+            text=True,
+            cwd=repo)
+        if result.returncode == 0 and result.stdout.strip():
+            return branch
+    return "main"
+
+
 def get_changed_files(repo: str) -> List[str]:
     """Get list of modified files in the merge request"""
     try:
-        subprocess.run(["git", "fetch", "origin", "master"],
+        default_branch = get_default_branch(repo)
+        subprocess.run(["git", "fetch", "origin", default_branch],
                        check=True,
                        stdout=subprocess.DEVNULL,
                        stderr=subprocess.DEVNULL,
                        cwd=repo)
 
         result = subprocess.run([
-            "git", "diff", "--name-only", "--diff-filter=ACMR", "origin/master"
+            "git", "diff", "--name-only", "--diff-filter=ACMR",
+            f"origin/{default_branch}"
         ],
                                 check=True,
                                 capture_output=True,
@@ -123,3 +139,27 @@ def check_format(repo_to_check):
         raise Exception("Format check failed!!!")
     print("✅ All files are properly formatted!")
     sys.stdout.flush()
+
+
+def main():
+    # The script lives at <kernel_root>/build/ci/run_check_fmt.py
+    kernel_root = str(Path(__file__).resolve().parent.parent.parent)
+
+    parser = argparse.ArgumentParser(
+        description='Check code formatting for BlueOS kernel repos')
+    parser.add_argument(
+        'repo_paths',
+        nargs='*',
+        default=[kernel_root],
+        help=
+        'Repository paths to check (default: kernel repo root derived from script location)'
+    )
+    args = parser.parse_args()
+    try:
+        check_format(args.repo_paths)
+    except Exception as e:
+        sys.exit(1)
+
+
+if __name__ == '__main__':
+    main()
