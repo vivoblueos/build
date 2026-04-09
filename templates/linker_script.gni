@@ -20,8 +20,8 @@ template("generate_linker_script") {
       "${invoker.template}",
     ]
     args = [
-      "--preprocesser",
-      "${invoker.preprocesser}",
+      "--preprocessor",
+      "${invoker.preprocessor}",
       "--input",
       rebase_path("${invoker.template}"),
       "--include_dir",

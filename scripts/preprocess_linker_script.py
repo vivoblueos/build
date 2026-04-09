@@ -22,11 +22,11 @@ import argparse
 import os
 
 
-def preprocess_linker_script(preprocesser, input_file, include_dir,
+def preprocess_linker_script(preprocessor, input_file, include_dir,
                              output_file):
     import subprocess
     cmd = [
-        preprocesser, '-E', '-x', 'c', '-P', '-I', include_dir, input_file,
+        preprocessor, '-E', '-x', 'c', '-P', '-I', include_dir, input_file,
         '-o', output_file
     ]
     result = subprocess.run(cmd, check=True)
@@ -35,7 +35,7 @@ def preprocess_linker_script(preprocesser, input_file, include_dir,
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--preprocesser", help="C preprocessor")
+    parser.add_argument("--preprocessor", help="C preprocessor")
     parser.add_argument("--input", help="Input linker script")
     parser.add_argument("--include_dir",
                         help="Include directory for preprocessing")
@@ -48,7 +48,7 @@ if __name__ == "__main__":
         if not os.path.exists(autoconf_c_header):
             with open(autoconf_c_header, 'a'):
                 pass
-        result = preprocess_linker_script(args.preprocesser, args.input,
+        result = preprocess_linker_script(args.preprocessor, args.input,
                                           args.include_dir, args.output)
         if result.returncode != 0:
             print("Error: Preprocessing failed", file=sys.stderr)
