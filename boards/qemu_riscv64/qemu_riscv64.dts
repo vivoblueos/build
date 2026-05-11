@@ -1,0 +1,19 @@
+// build/boards/qemu_riscv64/qemu_riscv64.dts
+// SPDX-License-Identifier: MIT OR Apache-2.0
+
+/dts-v1/;
+#include "riscv-virt.dtsi"
+
+/ {
+    model = "QEMU RISC-V 64-bit virt machine";
+    compatible = "qemu,riscv-virt";
+
+    chosen {
+        stdout-path = &uart0;
+    };
+
+    memory@80000000 {
+        device_type = "memory";
+        reg = <0x0 0x80000000 0x0 0x8000000>;
+    };
+};

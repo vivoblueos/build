@@ -1,0 +1,46 @@
+// build/dts/riscv/riscv-virt.dtsi
+// SPDX-License-Identifier: MIT OR Apache-2.0
+
+/dts-v1/;
+
+/ {
+    #address-cells = <2>;
+    #size-cells = <2>;
+
+    cpus {
+        #address-cells = <1>;
+        #size-cells = <0>;
+        timebase-frequency = <10000000>;
+    };
+
+    soc {
+        #address-cells = <2>;
+        #size-cells = <2>;
+        ranges;
+
+        plic: interrupt-controller@c000000 {
+            compatible = "riscv,plic0";
+            reg = <0x0 0xc000000 0x0 0x4000000>;
+            interrupts-extended;
+            interrupt-controller;
+            #interrupt-cells = <1>;
+        };
+
+        uart0: serial@10000000 {
+            compatible = "ns16550";
+            reg = <0x0 0x10000000 0x0 0x100>;
+            interrupt-parent = <&plic>;
+            interrupts = <10>;
+            clock-frequency = <3686400>;
+            status = "okay";
+        };
+
+        rtc@101000 {
+            compatible = "google,goldfish-rtc";
+            reg = <0x0 0x101000 0x0 0x1000>;
+            interrupt-parent = <&plic>;
+            interrupts = <11>;
+            status = "okay";
+        };
+    };
+};
