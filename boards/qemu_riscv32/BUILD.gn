@@ -17,12 +17,10 @@ import("//build/templates/board.gni")
 
 blueos_board("qemu_riscv32") {
   kernel_config = {
-    _linker_script = "//kernel/kernel/src/boards/${board}/link.x"
     cflags = [ "--static" ]
     ldflags = [
       "-nostartfiles",
       "-Wl,-gc-sections",
-      "-Wl,-T" + rebase_path(_linker_script),
       "-Wl,-z,norelro",
     ]
     rustflags = [
@@ -35,7 +33,6 @@ blueos_board("qemu_riscv32") {
     foreach(item, ldflags) {
       rustflags += [ "-Clink-arg=${item}" ]
     }
-    inputs = [ _linker_script ]
   }
 
   app_config = {

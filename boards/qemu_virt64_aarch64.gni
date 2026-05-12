@@ -13,6 +13,7 @@
 # limitations under the License.
 
 board_default_toolchain = "//build/toolchain:blueos_aarch64"
+default_linker_script = "//kernel/kernel/src/boards/${board}/link.x"
 qemu_exe = "qemu-system-aarch64"
 qemu_machine = "virt,virtualization=on,gic-version=3"
 rust_abi_target = "aarch64-unknown-none"

@@ -23,12 +23,11 @@ _sysroot = exec_script("//build/scripts/get_sysroot.py",
 generate_linker_script("default_linker_script") {
   preprocessor = "arm-none-eabi-cpp"
   template = "//kernel/arch/arm/cortex_m/link.x"
-  output = "${target_gen_dir}/link.pre.ld"
+  output = "${root_gen_dir}/link.pre.ld"
 }
 
 blueos_board("raspberry_pico2_cortexm") {
   kernel_config = {
-    _linker_script = rebase_path("${target_gen_dir}/link.pre.ld")
     cflags = [
       "--target=thumbv8m.main-none-eabihf",
       "--static",
@@ -41,7 +40,6 @@ blueos_board("raspberry_pico2_cortexm") {
     ldflags = [
       "-nostartfiles",
       "-Wl,-gc-sections",
-      "-Wl,-T" + rebase_path(_linker_script),
     ]
     rustflags = [
       "-Ctarget-cpu=cortex-m33",
@@ -70,7 +68,6 @@ blueos_board("raspberry_pico2_cortexm") {
     foreach(item, ldflags) {
       rustflags += [ "-Clink-arg=${item}" ]
     }
-    inputs = [ _linker_script ]
   }
   app_config = {
   }

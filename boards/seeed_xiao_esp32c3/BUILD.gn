@@ -21,7 +21,6 @@ _sysroot = exec_script("//build/scripts/get_sysroot.py",
 
 blueos_board("seeed_xiao_esp32c3") {
   kernel_config = {
-    _linker_script = "//kernel/kernel/src/boards/${board}/link.x"
     cflags = [
       "--static",
       "-fshort-enums",
@@ -33,7 +32,6 @@ blueos_board("seeed_xiao_esp32c3") {
     ldflags = [
       "-nostartfiles",
       "-Wl,-gc-sections",
-      "-Wl,-T" + rebase_path(_linker_script),
       "-Wl,-z,norelro",
     ]
     rustflags = [
@@ -46,7 +44,6 @@ blueos_board("seeed_xiao_esp32c3") {
     foreach(item, ldflags) {
       rustflags += [ "-Clink-arg=${item}" ]
     }
-    inputs = [ _linker_script ]
   }
 
   app_config = {

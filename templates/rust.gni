@@ -95,6 +95,16 @@ template("build_rust") {
     rustflags += [ "-Cmetadata=${rustc_metadata}" ]
   }
 
+  if (defined(inputs)) {
+  } else {
+    inputs = []
+  }
+
+  if (defined(invoker.linker_script)) {
+    rustflags += [ "-Clink-arg=-Wl,-T" + rebase_path(invoker.linker_script) ]
+    inputs += [ invoker.linker_script ]
+  }
+
   if (defined(invoker.crate_type) && invoker.crate_type == "proc-macro") {
     rust_proc_macro(target_name) {
       configs = []

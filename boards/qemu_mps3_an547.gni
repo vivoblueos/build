@@ -13,6 +13,7 @@
 # limitations under the License.
 
 board_default_toolchain = "//build/toolchain:blueos_thumbv8m"
+default_linker_script = "${root_gen_dir}/link.pre.ld"
 qemu_exe = "qemu-system-arm"
 qemu_machine = "mps3-an547"
 rust_abi_target = "thumbv8m.main-none-eabihf"
