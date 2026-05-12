@@ -23,12 +23,11 @@ _sysroot = exec_script("//build/scripts/get_sysroot.py",
 generate_linker_script("default_linker_script") {
   preprocessor = "arm-none-eabi-gcc"
   template = "//kernel/arch/arm/cortex_m/link.x"
-  output = "${target_gen_dir}/link.pre.ld"
+  output = "${root_gen_dir}/link.pre.ld"
 }
 
 blueos_board("qemu_mps3_an547") {
   kernel_config = {
-    _linker_script = rebase_path("${target_gen_dir}/link.pre.ld")
     cflags = [
       "--target=thumbv8m.main-none-eabihf",
       "-mthumb",
@@ -51,7 +50,6 @@ blueos_board("qemu_mps3_an547") {
       "-mfloat-abi=hard",
       "-nostartfiles",
       "-Wl,-gc-sections",
-      "-Wl,-T" + rebase_path(_linker_script),
       "-Wl,-z,norelro",
     ]
     rustflags = [
@@ -72,7 +70,6 @@ blueos_board("qemu_mps3_an547") {
     foreach(item, ldflags) {
       rustflags += [ "-Clink-arg=${item}" ]
     }
-    inputs = [ _linker_script ]
   }
   app_config = {
     rustflags = [

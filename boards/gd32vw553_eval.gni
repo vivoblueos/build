@@ -17,6 +17,7 @@ declare_args() {
 }
 
 board_default_toolchain = "//build/toolchain:blueos_riscv32imac"
+default_linker_script = "//kernel/kernel/src/boards/${board}/link.x"
 qemu_exe = ""
 qemu_machine = ""
 rust_abi_target = "riscv32"

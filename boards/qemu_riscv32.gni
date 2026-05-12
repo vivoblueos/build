@@ -13,6 +13,7 @@
 # limitations under the License.
 
 board_default_toolchain = "//build/toolchain:blueos_riscv32imc"
+default_linker_script = "//kernel/kernel/src/boards/${board}/link.x"
 qemu_exe = "qemu-system-riscv32"
 qemu_machine = "virt"
 rust_abi_target = "riscv32"
