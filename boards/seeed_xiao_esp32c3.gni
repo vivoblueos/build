@@ -27,4 +27,4 @@ qemu_block_args = []
 qemu_esp32_bootloader_bin = "https://github.com/vivoblueos/toolchain/releases/download/v0.8.0/esp32c3-bootloader.bin"
 qemu_esp32_partition_table_bin = "https://github.com/vivoblueos/toolchain/releases/download/v0.8.0/esp32c3-partition-table.bin"
 qemu_use_esp32_loader = true
-board_deps = []
+board_deps = [ "//external/vendor/smoltcp-0.12.0:smoltcp" ]
