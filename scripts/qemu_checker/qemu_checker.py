@@ -153,7 +153,7 @@ class Checker(object):
                         process.stdout.readline(), timeout=self.timeout)
                     if not output_line:
                         break
-                    output_line = output_line.decode()
+                    output_line = output_line.decode(errors='replace')
                     sys.stdout.write(output_line)
                     sys.stdout.flush()
                     try:
