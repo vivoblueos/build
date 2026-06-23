@@ -93,6 +93,21 @@ blueos_toolchain("blueos_thumbv8m") {
   }
 }
 
+blueos_toolchain("gcc_fv_thumbv8m") {
+  cc = "arm-none-fv-eabi-gcc"
+  cxx = "arm-none-fv-eabi-g++"
+  ld = "arm-none-fv-eabi-gcc"
+  ar = "arm-none-fv-eabi-ar"
+  objcopy = "arm-none-fv-eabi-objcopy"
+  rustc = "rustc --target=thumbv8m.main-vivo-blueos-newlibeabihf"
+  clippy_driver =
+      "clippy-driver --target=thumbv8m.main-vivo-blueos-newlibeabihf"
+  toolchain_args = {
+    current_os = "blueos"
+    current_cpu = "arm"
+  }
+}
+
 blueos_toolchain("aarch64") {
   cc = "aarch64-none-elf-gcc"
   cxx = "aarch64-none-elf-g++"
