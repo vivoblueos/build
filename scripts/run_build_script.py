@@ -99,6 +99,8 @@ def set_cargo_cfg_target_env_variables(rustc_print_cfg_path, env):
 # Before 1.77, the format was `cargo:rustc-cfg=`. As of 1.77 the format is now
 # `cargo::rustc-cfg=`.
 RUSTC_CFG_LINE = re.compile("cargo::?rustc-cfg=(.*)")
+RUSTC_LINK_LIB_LINE = re.compile("cargo::?rustc-link-lib=(.*)")
+RUSTC_LINK_SEARCH_LINE = re.compile("cargo::?rustc-link-search=(.*)")
 
 
 def main():
@@ -194,6 +196,12 @@ def main():
             m = RUSTC_CFG_LINE.match(line.rstrip())
             if m:
                 flags = "%s--cfg\n%s\n" % (flags, m.group(1))
+            m = RUSTC_LINK_LIB_LINE.match(line.rstrip())
+            if m:
+                flags = "%s-l\n%s\n" % (flags, m.group(1))
+            m = RUSTC_LINK_SEARCH_LINE.match(line.rstrip())
+            if m:
+                flags = "%s-L\n%s\n" % (flags, m.group(1))
 
         # AtomicOutput will ensure we only write to the file on disk if what we
         # give to write() is different than what's currently on disk.
