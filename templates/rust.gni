@@ -62,6 +62,10 @@ template("build_rust") {
     rustflags = []
   }
 
+  if (defined(board_rustflags)) {
+    rustflags += board_rustflags
+  }
+
   if (defined(invoker.features)) {
     foreach(feature, invoker.features) {
       rustflags += [ "--cfg=feature=\"${feature}\"" ]
