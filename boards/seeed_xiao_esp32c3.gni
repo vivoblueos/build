@@ -46,7 +46,4 @@ board_rustflags = [
   "native=" + rebase_path("//external/vendor/esp-radio-0.18.0"),
   "-L",
   "native=" + rebase_path("//external/vendor/esp-phy-0.2.0"),
-  "-L",
-  "native=" + rebase_path(
-          "//out/seeed_xiao_esp32c3.release/gen/apps/shell/obj/external/vendor/esp-phy-0.2.0/"),
 ]
