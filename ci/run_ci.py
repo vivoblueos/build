@@ -39,6 +39,7 @@ import argparse
 BOARDS = [
     'none',
     'qemu_mps2_an385',
+    # 'newlib_mps3_an547',
     'qemu_mps3_an547',
     'qemu_riscv32',
     'qemu_riscv64',

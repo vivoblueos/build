@@ -13,10 +13,14 @@
 # limitations under the License.
 
 if (current_toolchain == "//build/toolchain:blueos_thumbv7m" ||
-    current_toolchain == "//build/toolchain:blueos_thumbv8m") {
-  current_sysroot = exec_script("//build/scripts/get_sysroot.py",
-                                [ "arm-none-eabi-gcc" ],
-                                "string")
+    current_toolchain == "//build/toolchain:blueos_thumbv8m" ||
+    current_toolchain == "//build/toolchain:gcc_fv_thumbv8m") {
+  gcc_prefix = "arm-none-eabi-gcc"
+  if (current_toolchain == "//build/toolchain:gcc_fv_thumbv8m") {
+    gcc_prefix = "arm-none-fv-eabi-gcc"
+  }
+  current_sysroot =
+      exec_script("//build/scripts/get_sysroot.py", [ gcc_prefix ], "string")
 } else if (current_toolchain == "//build/toolchain:blueos_riscv32imc" ||
            current_toolchain == "//build/toolchain:blueos_riscv32imac") {
   current_sysroot = exec_script("//build/scripts/get_sysroot.py",

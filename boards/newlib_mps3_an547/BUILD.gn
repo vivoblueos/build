@@ -1,0 +1,73 @@
+# Copyright (c) 2025 vivo Mobile Communication Co., Ltd.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#       http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+import("//build/default_targets.gni")
+import("//build/templates/board.gni")
+import("//build/templates/linker_script.gni")
+
+generate_linker_script("default_linker_script") {
+  preprocessor = "arm-none-fv-eabi-gcc"
+  template = "//kernel/arch/arm/cortex_m/link.x"
+  output = "${root_gen_dir}/link.pre.ld"
+}
+
+blueos_board("newlib_mps3_an547") {
+  kernel_config = {
+    cflags = [
+      # use gcc cflags style
+      "-march=armv8.1-m.main",
+      "-mfpu=fpv5-d16",
+      "-mfloat-abi=hard",
+      "-g2",
+    ]
+    ldflags = [
+      "-mthumb",
+      "-mcpu=cortex-m55",
+      "-march=armv8.1-m.main+mve.fp+fp.dp",
+      "-mfpu=fpv5-d16",
+      "-mfloat-abi=hard",
+      "-nostartfiles",
+      "-Wl,-gc-sections",
+    ]
+    rustflags = [
+      "--cfg",
+      "target_board=\"newlib_mps3_an547\"",
+      "--cfg",
+      "cortex_m",
+      "--cfg",
+      "armv8m",
+      "--cfg",
+      "armv8m_main",
+      "--cfg",
+      "has_fpu",
+      "-Zemit-stack-sizes",
+      "-Crelocation-model=static",
+      "-Clinker=arm-none-fv-eabi-gcc",
+    ]
+    foreach(item, ldflags) {
+      rustflags += [ "-Clink-arg=${item}" ]
+    }
+  }
+  app_config = {
+    rustflags = [
+      "-Clinker=clang",
+      "-Clink-arg=-fuse-ld=lld",
+      "-Clink-arg=--target=thumbv8m.main-none-eabihf",
+    ]
+  }
+  default = [ "//librs/tests/newlib_c_cc:check_newlib_c_cc" ]
+  check_all = [ "//librs/tests/newlib_c_cc:check_newlib_c_cc" ]
+
+  # this target enable VFS default
+}
