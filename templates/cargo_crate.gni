@@ -111,6 +111,10 @@ template("cargo_crate") {
       flags_file = "${target_out_dir}/cargo_flags.rs"
 
       rustflags += [ "@" + rebase_path(flags_file, root_build_dir) ]
+      rustflags += [
+        "-L",
+        "native=" + rebase_path(target_out_dir, root_build_dir),
+      ]
       sources += [ flags_file ]
       if (defined(invoker.build_script_outputs)) {
         inputs = []

@@ -65,4 +65,7 @@ blueos_board("seeed_xiao_esp32c3") {
                                "//kernel/adapter*",
                                "//kernel/loader*",
                              ])
+
+  check_all +=
+      [ "//kernel/adapter/esp_radio_sys:esp_radio_sys_unittest_runner" ]
 }

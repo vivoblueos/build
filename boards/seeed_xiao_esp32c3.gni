@@ -27,4 +27,23 @@ qemu_block_args = []
 qemu_esp32_bootloader_bin = "https://github.com/vivoblueos/toolchain/releases/download/v0.8.0/esp32c3-bootloader.bin"
 qemu_esp32_partition_table_bin = "https://github.com/vivoblueos/toolchain/releases/download/v0.8.0/esp32c3-partition-table.bin"
 qemu_use_esp32_loader = true
-board_deps = []
+board_deps = [
+  "//external/vendor/esp-hal-1.1.1:esp_hal",
+  "//external/vendor/esp-phy-0.2.0:esp_phy",
+  "//external/vendor/esp-rom-sys-0.1.4:esp_rom_sys",
+  "//external/vendor/esp-sync-0.2.1:esp_sync",
+  "//external/vendor/esp-wifi-sys-esp32c3-0.2.0:esp_wifi_sys_esp32c3",
+  "//external/vendor/esp32c3-0.32.2:esp32c3",
+  "//external/vendor/smoltcp-0.12.0:smoltcp",
+]
+
+board_rustflags = [
+  "-L",
+  "native=" + rebase_path("//external/vendor/esp-wifi-sys-esp32c3-0.2.0/libs"),
+  "-L",
+  "native=" + rebase_path("//external/vendor/esp-rom-sys-0.1.4/ld/esp32c3"),
+  "-L",
+  "native=" + rebase_path("//external/vendor/esp-radio-0.18.0"),
+  "-L",
+  "native=" + rebase_path("//external/vendor/esp-phy-0.2.0"),
+]
