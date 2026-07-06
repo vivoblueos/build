@@ -66,6 +66,5 @@ blueos_board("seeed_xiao_esp32c3") {
   _check_all = check_all_on_virtual_board + clippy_all_on_virtual_board
   check_all = filter_exclude(_check_all, [ "//kernel/adapter*" ])
 
-  check_all +=
-      [ "//kernel/adapter/esp_radio_sys:esp_radio_sys_unittest_runner" ]
+  check_all += [ "//kernel/adapter/esp_radio_sys:run_esp_radio_sys_unittest" ]
 }
