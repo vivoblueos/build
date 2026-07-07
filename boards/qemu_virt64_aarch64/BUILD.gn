@@ -37,7 +37,7 @@ blueos_board("qemu_virt64_aarch64") {
   app_config = {
     rustflags = [
       "--cfg",
-      "target_board=\"qemu_riscv64\"",
+      "target_board=\"qemu_virt64_aarch64\"",
       "-Clinker=aarch64-none-elf-gcc",
     ]
   }
