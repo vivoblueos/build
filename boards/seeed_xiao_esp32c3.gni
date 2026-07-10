@@ -34,6 +34,7 @@ board_deps = [
   "//external/vendor/esp-sync-0.2.1:esp_sync",
   "//external/vendor/esp-wifi-sys-esp32c3-0.2.0:esp_wifi_sys_esp32c3",
   "//external/vendor/esp32c3-0.32.2:esp32c3",
+  "//external/vendor/mipidsi-0.10.0:mipidsi",
   "//external/vendor/smoltcp-0.12.0:smoltcp",
 ]
 

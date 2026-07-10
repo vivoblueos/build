@@ -58,7 +58,10 @@ blueos_board("seeed_xiao_esp32c3") {
       "-Clink-arg=-Wl,-z,norelro",
     ]
   }
-  default = [ "//apps/shell:shell" ]
+  default = [
+    "//apps/shell:shell",
+    "//apps/example/framebuffer:fb_example",
+  ]
   _check_all = check_all_on_virtual_board + clippy_all_on_virtual_board
   check_all = filter_exclude(_check_all,
                              [
