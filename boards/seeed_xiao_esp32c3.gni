@@ -27,6 +27,14 @@ qemu_block_args = []
 qemu_esp32_bootloader_bin = "https://github.com/vivoblueos/toolchain/releases/download/v0.8.0/esp32c3-bootloader.bin"
 qemu_esp32_partition_table_bin = "https://github.com/vivoblueos/toolchain/releases/download/v0.8.0/esp32c3-partition-table.bin"
 qemu_use_esp32_loader = true
+
+loader_test_relocation = {
+  region = "RTC_FAST"
+  origin = "0x50000000"
+  length = "0x2000"
+  permissions = "rwx"
+}
+
 board_deps = [
   "//external/vendor/esp-hal-1.1.1:esp_hal",
   "//external/vendor/esp-phy-0.2.0:esp_phy",
