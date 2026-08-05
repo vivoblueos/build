@@ -35,6 +35,10 @@ loader_test_relocation = {
   permissions = "rwx"
 }
 
+loader_test_libc = {
+  lib_dir = "lib/rv32im/ilp32"
+}
+
 board_deps = [
   "//external/vendor/esp-hal-1.1.1:esp_hal",
   "//external/vendor/esp-phy-0.2.0:esp_phy",
