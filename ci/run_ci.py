@@ -48,6 +48,7 @@ BOARDS = [
     'rk3568',
     'gd32e507_eval',
     'seeed_xiao_esp32c3',
+    'esp32c6_devkitc_1',
     'raspberry_pico2_cortexm',
 ]
 BUILD_TYPES = ['release', 'debug']
