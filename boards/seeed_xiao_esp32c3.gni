@@ -35,6 +35,20 @@ loader_test_relocation = {
   permissions = "rwx"
 }
 
+# Two consecutive flash MMU pages are reserved for the XIP test: executable
+# text at physical 0x110000 and read-only data at physical 0x120000. Writable
+# state uses a 4 KiB DRAM window reserved by the kernel linker script, outside
+# both the kernel heap and system stack.
+loader_test_large_relocation = {
+  region = "IROM"
+  origin = "0x42110000"
+  length = "0x10000"
+  permissions = "rx"
+  rodata_origin = "0x3c120000"
+  data_origin = "0x3fcc7400"
+  data_length = "0x1000"
+}
+
 board_deps = [
   "//external/vendor/esp-hal-1.1.1:esp_hal",
   "//external/vendor/esp-phy-0.2.0:esp_phy",
