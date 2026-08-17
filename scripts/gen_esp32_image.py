@@ -15,13 +15,15 @@
 # limitations under the License.
 
 import argparse
+import hashlib
 import os
 import sys
+import tempfile
 import urllib.parse
 import urllib.request
 
 from esptool import arg_auto_chunk_size, arg_auto_int
-from esptool.cmds import elf2image, merge_bin
+from esptool.cmds import CHIP_DEFS, FLASH_MODES, elf2image, merge_bin
 
 FLASH_FREQ_CHOICES = [
     "80m",
@@ -87,6 +89,42 @@ def download_if_url(value: str, output_dir: str, default_name: str) -> str:
     except Exception as exc:
         raise SystemExit(f"Failed to download {value}: {exc}") from exc
     return dest_path
+
+
+def rewrite_bootloader_flash_params(chip_class, address, args, image):
+    """Apply requested flash parameters to a prebuilt bootloader image.
+
+    esptool intentionally leaves SHA-256 protected images unchanged. The
+    bundled ESP32-C3 bootloader advertises 2MB, however, while the QEMU flash
+    backend and board layout use 4MB. Rewrite the header and refresh the
+    appended digest so the bootloader accepts the resulting image.
+    """
+    if address != chip_class.BOOTLOADER_FLASH_OFFSET or len(image) < 8:
+        return image
+    if image[0] != chip_class.ESP_IMAGE_MAGIC:
+        return image
+
+    flash_mode = image[2]
+    flash_size_freq = image[3]
+    if args.flash_mode != "keep":
+        flash_mode = FLASH_MODES[args.flash_mode]
+    if args.flash_freq != "keep":
+        flash_size_freq = (flash_size_freq & 0xF0) + chip_class.parse_flash_freq_arg(
+            args.flash_freq
+        )
+    if args.flash_size != "keep":
+        flash_size_freq = (flash_size_freq & 0x0F) | chip_class.parse_flash_size_arg(
+            args.flash_size
+        )
+
+    updated = bytearray(image)
+    updated[2] = flash_mode
+    updated[3] = flash_size_freq
+
+    # ESP32 extended header byte 15 indicates an appended SHA-256 digest.
+    if len(updated) >= 32 and len(updated) > 8 + 15 and updated[8 + 15] == 1:
+        updated[-32:] = hashlib.sha256(updated[:-32]).digest()
+    return bytes(updated)
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -398,7 +436,9 @@ def build_parser() -> argparse.ArgumentParser:
         "-fs",
         help="SPI flash size",
         choices=["keep"] + FLASH_SIZE_CHOICES,
-        default=os.environ.get("ESPTOOL_FS", "keep"),
+        # Resolve the ESP32-C3 default in run_build_image so other chips keep
+        # esptool's original "keep" behavior.
+        default=os.environ.get("ESPTOOL_FS"),
     )
     build_image_parser.add_argument(
         "--target-offset",
@@ -429,8 +469,27 @@ def run_merge_bin(args: argparse.Namespace) -> int:
     args.partition_table = download_if_url(args.partition_table, output_dir,
                                            "partition_table.bin")
 
+    temporary_bootloader = None
+    if any(value != "keep"
+           for value in (args.flash_mode, args.flash_freq, args.flash_size)):
+        chip_class = CHIP_DEFS[args.chip]
+        with open(args.bootloader, "rb") as bootloader_file:
+            bootloader = bootloader_file.read()
+        bootloader = rewrite_bootloader_flash_params(
+            chip_class, args.bootloader_offset, args, bootloader
+        )
+        temporary_bootloader = tempfile.NamedTemporaryFile(
+            mode="wb", prefix=".blueos-bootloader-", suffix=".bin",
+            dir=output_dir, delete=False
+        )
+        temporary_bootloader.write(bootloader)
+        temporary_bootloader.close()
+        bootloader_path = temporary_bootloader.name
+    else:
+        bootloader_path = args.bootloader
+
     input_pairs = [
-        (args.bootloader_offset, args.bootloader),
+        (args.bootloader_offset, bootloader_path),
         (args.partition_table_offset, args.partition_table),
         (args.app_offset, args.app_image),
     ]
@@ -455,6 +514,8 @@ def run_merge_bin(args: argparse.Namespace) -> int:
     finally:
         for _, f in files:
             f.close()
+        if temporary_bootloader is not None:
+            os.unlink(temporary_bootloader.name)
     return 0
 
 
@@ -464,6 +525,8 @@ def run_build_image(args: argparse.Namespace) -> int:
     app_image = os.path.join(output_dir,
                              f".{os.path.basename(args.output)}.app.img")
     try:
+        if args.flash_size is None:
+            args.flash_size = "4MB" if args.chip == "esp32c3" else "keep"
         elf_args = argparse.Namespace(
             input=args.input,
             output=app_image,

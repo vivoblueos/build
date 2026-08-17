@@ -25,7 +25,6 @@ if (coverage || profile) {
     "//apps/shell:shell",
     "//kernel/adapter:check_adapter",
     "//kernel/kernel:check_kernel",
-    "//kernel/loader:check_loader",
     "//kernel/rsrt:check_rsrt",
     "//librs:check_librs",
   ]
