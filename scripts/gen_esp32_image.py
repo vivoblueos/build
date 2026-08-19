@@ -109,13 +109,13 @@ def rewrite_bootloader_flash_params(chip_class, address, args, image):
     if args.flash_mode != "keep":
         flash_mode = FLASH_MODES[args.flash_mode]
     if args.flash_freq != "keep":
-        flash_size_freq = (flash_size_freq & 0xF0) + chip_class.parse_flash_freq_arg(
-            args.flash_freq
-        )
+        flash_size_freq = (flash_size_freq
+                           & 0xF0) + chip_class.parse_flash_freq_arg(
+                               args.flash_freq)
     if args.flash_size != "keep":
-        flash_size_freq = (flash_size_freq & 0x0F) | chip_class.parse_flash_size_arg(
-            args.flash_size
-        )
+        flash_size_freq = (flash_size_freq
+                           & 0x0F) | chip_class.parse_flash_size_arg(
+                               args.flash_size)
 
     updated = bytearray(image)
     updated[2] = flash_mode
@@ -475,13 +475,15 @@ def run_merge_bin(args: argparse.Namespace) -> int:
         chip_class = CHIP_DEFS[args.chip]
         with open(args.bootloader, "rb") as bootloader_file:
             bootloader = bootloader_file.read()
-        bootloader = rewrite_bootloader_flash_params(
-            chip_class, args.bootloader_offset, args, bootloader
-        )
+        bootloader = rewrite_bootloader_flash_params(chip_class,
+                                                     args.bootloader_offset,
+                                                     args, bootloader)
         temporary_bootloader = tempfile.NamedTemporaryFile(
-            mode="wb", prefix=".blueos-bootloader-", suffix=".bin",
-            dir=output_dir, delete=False
-        )
+            mode="wb",
+            prefix=".blueos-bootloader-",
+            suffix=".bin",
+            dir=output_dir,
+            delete=False)
         temporary_bootloader.write(bootloader)
         temporary_bootloader.close()
         bootloader_path = temporary_bootloader.name

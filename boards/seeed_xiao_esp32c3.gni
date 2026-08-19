@@ -37,6 +37,7 @@ ram_loader_test_relocation = {
 
 flash_loader_test_relocation = {
   page_size = "0x10000"
+
   # Offsets below are relative to esp32-flash0's loadable region,
   # whose physical flash base is 0x100000.
   capacity = "0x300000"
