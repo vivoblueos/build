@@ -19,7 +19,7 @@ _sysroot = exec_script("//build/scripts/get_sysroot.py",
                        [ "riscv-none-elf-gcc" ],
                        "string")
 
-blueos_board("seeed_xiao_esp32c3") {
+blueos_board("esp32c6_devkitc_1") {
   kernel_config = {
     cflags = [
       "--static",
@@ -36,7 +36,7 @@ blueos_board("seeed_xiao_esp32c3") {
     ]
     rustflags = [
       "--cfg",
-      "target_board=\"seeed_xiao_esp32c3\"",
+      "target_board=\"esp32c6_devkitc_1\"",
       "-Zemit-stack-sizes",
       "-Crelocation-model=static",
       "-Clinker=riscv-none-elf-gcc",
@@ -46,25 +46,38 @@ blueos_board("seeed_xiao_esp32c3") {
     }
   }
 
+  # ESP32-C6 is rv32imac (has the atomic extension), whereas C3 was rv32imc.
   app_config = {
     rustflags = [
       "--cfg",
-      "target_board=\"seeed_xiao_esp32c3\"",
+      "target_board=\"esp32c6_devkitc_1\"",
       "-Clinker=clang",
       "-Clink-arg=-fuse-ld=lld",
       "-Clink-arg=--target=riscv32",
-      "-Clink-arg=-march=rv32imc",
+      "-Clink-arg=-march=rv32imac",
       "-Clink-arg=-mabi=ilp32",
       "-Clink-arg=-Wl,-z,norelro",
     ]
   }
-  default = [ "//apps/shell:shell" ]
-  _check_all = check_all_on_virtual_board + clippy_all_on_virtual_board
-  check_all = filter_exclude(_check_all,
-                             [
-                               "//kernel/adapter*",
-                               "//kernel/loader*",
-                             ])
 
-  check_all += [ "//kernel/adapter/esp_radio_sys:run_esp_radio_sys_unittest" ]
+  default = [
+    "//apps/shell:shell",
+    "//apps/example/agent_loop:agent_loop",
+    "//apps/example/wifi:wifi_example",
+  ]
+
+  # ESP32-C6 has no usable QEMU: upstream QEMU has no esp32c6 machine and the
+  # qemu-esp32 fork only supports esp32c3 (see
+  # memory/qemu-esp32-fork-missing.md). So, like gd32vw553_eval, C6 runs only
+  # clippy + compilation checks here. The `run_qemu_check`-based
+  # `check_kernel`/`check_librs`/`check_rsrt` (which execute the ELF under QEMU)
+  # are intentionally NOT referenced — they would fail with
+  # `unsupported machine type: "esp32c6"`. Board verification runs through
+  # espflash / Wokwi on real hardware instead.
+  check_all = [
+    "//apps/shell:shell",
+    "//kernel/kernel:check_kernel_by_clippy",
+    "//librs:check_librs_by_clippy",
+    "//kernel/rsrt:check_rsrt_by_clippy",
+  ]
 }
