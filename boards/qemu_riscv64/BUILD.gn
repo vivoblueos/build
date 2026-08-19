@@ -55,4 +55,7 @@ blueos_board("qemu_riscv64") {
   default = []
   _check_all = check_all_on_virtual_board + clippy_all_on_virtual_board
   check_all = filter_exclude(_check_all, [ "//kernel/adapter*" ])
+  if (!coverage && !profile) {
+    check_all += [ "//kernel/loader:check_loader" ]
+  }
 }

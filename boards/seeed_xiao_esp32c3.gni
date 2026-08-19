@@ -28,11 +28,36 @@ qemu_esp32_bootloader_bin = "https://github.com/vivoblueos/toolchain/releases/do
 qemu_esp32_partition_table_bin = "https://github.com/vivoblueos/toolchain/releases/download/v0.8.0/esp32c3-partition-table.bin"
 qemu_use_esp32_loader = true
 
-loader_test_relocation = {
+ram_loader_test_relocation = {
   region = "RTC_FAST"
   origin = "0x50000000"
   length = "0x2000"
   permissions = "rwx"
+}
+
+flash_loader_test_relocation = {
+  page_size = "0x10000"
+
+  # Offsets below are relative to esp32-flash0's loadable region,
+  # whose physical flash base is 0x100000.
+  capacity = "0x300000"
+  irom = {
+    origin = "0x42100000"
+    length = "0x10000"
+    permissions = "rx"
+    flash_offset = "0x0"
+  }
+  rodata = {
+    origin = "0x3c110000"
+    length = "0x10000"
+    permissions = "r"
+    flash_offset = "0x10000"
+  }
+  rwdata = {
+    origin = "0x3fcc7400"
+    length = "0x1000"
+    permissions = "rw"
+  }
 }
 
 board_deps = [
