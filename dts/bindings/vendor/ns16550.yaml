@@ -1,0 +1,29 @@
+# build/dts/bindings/vendor/ns16550.yaml
+compatible: "ns16550"
+description: "NS16550 UART controller"
+
+properties:
+  reg:
+    type: array
+    rust:
+      - name: "BASE_ADDRESS"
+        value: "[0].address"
+        ty: "usize"
+      - name: "REG_SIZE"
+        value: "[0].size"
+        ty: "usize"
+  interrupts:
+    type: array
+    rust:
+      - name: "IRQ_NUMBER"
+        value: "[0]"
+        ty: "usize"
+  clock-frequency:
+    type: int
+    rust:
+      - name: "CLOCK_FREQUENCY"
+        value: "."
+        ty: "u32"
+
+cfg-flags:
+  - "dt_has_${compatible_label}"

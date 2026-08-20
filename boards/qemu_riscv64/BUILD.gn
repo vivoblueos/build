@@ -14,6 +14,24 @@
 
 import("//build/default_targets.gni")
 import("//build/templates/board.gni")
+import("//build/templates/build_template.gni")
+
+# --- DTS generation (Phase 2: Ninja action) ---
+if (defined(dts_file)) {
+  dts_gen("dts_gen_qemu_riscv64") {
+    dts_file = dts_file
+  }
+
+  # Pre-compute DTS rustflags once (runs at gn gen time).
+  _dts_rustflags = exec_script("//build/scripts/dts_feature_detect.py",
+                                [
+                                  "--dts",
+                                  rebase_path(dts_file),
+                                  "--dts-dir",
+                                  rebase_path("//build/dts"),
+                                ],
+                                "list lines")
+}
 
 blueos_board("qemu_riscv64") {
   kernel_config = {
@@ -34,6 +52,9 @@ blueos_board("qemu_riscv64") {
       "-Clink-arg=-march=rv64",
       "-Clink-arg=-mabi=lp64",
     ]
+    if (defined(dts_file)) {
+      rustflags += _dts_rustflags
+    }
     foreach(item, ldflags) {
       rustflags += [ "-Clink-arg=${item}" ]
     }
@@ -50,9 +71,15 @@ blueos_board("qemu_riscv64") {
       "-Clink-arg=-mabi=lp64",
       "-Clink-arg=-Wl,-z,norelro",
     ]
+    if (defined(dts_file)) {
+      rustflags += _dts_rustflags
+    }
   }
 
   default = []
+  if (defined(dts_file)) {
+    default += [ ":dts_gen_qemu_riscv64" ]
+  }
   _check_all = check_all_on_virtual_board + clippy_all_on_virtual_board
   check_all = filter_exclude(_check_all, [ "//kernel/adapter*" ])
 }
