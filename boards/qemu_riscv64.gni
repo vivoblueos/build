@@ -25,6 +25,8 @@ qemu_extra_args = [
 ]
 qemu_net_args = []
 qemu_block_args = []
+dts_file = "//build/boards/qemu_riscv64/qemu_riscv64.dts"
+dts_out_dir = rebase_path("${root_gen_dir}/dts")
 board_deps = [
   "//external/vendor/semihosting-0.1.20:semihosting",
   "//external/vendor/smoltcp-0.12.0:smoltcp",
