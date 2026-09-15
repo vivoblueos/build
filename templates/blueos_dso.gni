@@ -1,0 +1,89 @@
+# Copyright (c) 2026 vivo Mobile Communication Co., Ltd.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#       http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+import("//build/boards/${board}.gni")
+import("//build/templates/rust.gni")
+
+# Build a PIC shared object (ET_DYN, `-shared`) and gate its ELF contract.
+#
+# A DSO can serve as a system shared library such as `libc.so.1`. The profile
+# pins PIC codegen and the dynamic hardening flags supported by the board
+# linker. A SONAME is emitted by default; set `omit_soname = true` for a
+# path-addressed DSO that intentionally has none.
+#
+# Produces:
+# :<name>        the linked `lib/lib<crate_name>.so`
+# :<name>_check  runs the ELF contract gate
+template("blueos_dso") {
+  assert(defined(invoker.sources), "blueos_dso requires `sources`")
+
+  _name = target_name
+  _crate_name = _name
+  if (defined(invoker.crate_name)) {
+    _crate_name = invoker.crate_name
+  }
+
+  _omit_soname = defined(invoker.omit_soname) && invoker.omit_soname
+  assert(!_omit_soname || !defined(invoker.soname),
+         "blueos_dso cannot set both `soname` and `omit_soname`")
+
+  build_rust(_name) {
+    forward_variables_from(invoker,
+                           "*",
+                           [
+                             "rustflags",
+                             "omit_soname",
+                             "soname",
+                           ])
+    crate_type = "cdylib"
+    configs += [ "//build/boards/${board}:dynamic_config" ]
+    rustflags = [
+      "-Clink-arg=-nostartfiles",
+      "-Clink-arg=-Wl,-z,now",
+      "-Clink-arg=-Wl,-z,noexecstack",
+      "-Clink-arg=-Wl,-z,max-page-size=4096",
+      "-Clink-arg=-Wl,--build-id",
+    ]
+    if (!_omit_soname) {
+      _soname = "lib${_crate_name}.so"
+      if (defined(invoker.soname)) {
+        _soname = invoker.soname
+      }
+      rustflags += [ "-Clink-arg=-Wl,-soname=${_soname}" ]
+    }
+    if (defined(invoker.rustflags)) {
+      rustflags += invoker.rustflags
+    }
+  }
+
+  _out_dir = get_label_info(":${_name}", "root_out_dir")
+  _elf = "${_out_dir}/lib/lib${_crate_name}.so"
+
+  action("${_name}_check") {
+    forward_variables_from(invoker, [ "testonly" ])
+    script = "//build/scripts/check_blueos_elf.py"
+    inputs = [ _elf ]
+    deps = [ ":${_name}" ]
+    args = [
+      "--profile",
+      "dso",
+      "--target-profile",
+      dynamic_elf_profile,
+      "--stamp",
+      rebase_path("${target_gen_dir}/${_name}_check.stamp"),
+      rebase_path(_elf),
+    ]
+    outputs = [ "${target_gen_dir}/${_name}_check.stamp" ]
+  }
+}

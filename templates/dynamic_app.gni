@@ -1,0 +1,103 @@
+# Copyright (c) 2026 vivo Mobile Communication Co., Ltd.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#       http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+import("//build/boards/${board}.gni")
+import("//build/templates/rust.gni")
+
+# Build a PIC/PIE dynamic application (ET_DYN) and gate its ELF contract.
+#
+# The image is relocated by the kernel loader against a `libc.so.1` dependency:
+# it must carry PT_DYNAMIC + DT_NEEDED, must be PIE (DF_1_PIE), and must not
+# carry PT_INTERP or be linked static (see `check_blueos_elf.py`). RELRO is
+# optional because the board's bare-metal GNU ld emulation does not emit it.
+# The caller supplies the `libc.so.1` import through `deps`/`rustflags` and the
+# `blueos_scrt1` start object through `start_object`.
+#
+# `start_object` is a GN static_library target (//librs:blueos_scrt1); its .a
+# is linked whole and first so `_start` becomes the PIE entry.
+#
+# Produces two targets:
+# :<name>         the linked `bin/<name>` (ET_DYN PIE)
+# :<name>_check   runs the ELF contract gate
+template("dynamic_app") {
+  assert(defined(invoker.sources), "dynamic_app requires `sources`")
+
+  _name = target_name
+  build_rust(_name) {
+    forward_variables_from(invoker,
+                           "*",
+                           [
+                             "rustflags",
+                             "deps",
+                             "start_object",
+                           ])
+    crate_type = "bin"
+    configs += [ "//build/boards/${board}:dynamic_config" ]
+
+    # A dynamic application brings its own `blueos_scrt1` start object; the
+    # toolchain crt0 must never be linked in.
+    rustflags = [
+      "-Clink-arg=-nostartfiles",
+      "-Clink-arg=-Wl,-pie",
+      "-Clink-arg=-Wl,--no-dynamic-linker",
+      "-Clink-arg=-Wl,-z,now",
+      "-Clink-arg=-Wl,-z,noexecstack",
+      "-Clink-arg=-Wl,-z,max-page-size=4096",
+      "-Clink-arg=-Wl,--build-id",
+    ]
+    if (defined(invoker.rustflags)) {
+      rustflags += invoker.rustflags
+    }
+    deps = []
+    if (defined(invoker.deps)) {
+      deps += invoker.deps
+    }
+    if (defined(invoker.start_object)) {
+      # Link the start object whole and first: an archive only pulls members
+      # that resolve an undefined symbol, and `_start` has no referrer, so
+      # without `--whole-archive` the entry would vanish and the link would
+      # fail with an undefined `_start`.
+      _start_object = invoker.start_object
+      _start_out_dir = get_label_info(_start_object, "root_out_dir")
+      _start_name = get_label_info(_start_object, "name")
+      _start_lib = rebase_path("${_start_out_dir}/lib/lib${_start_name}.a")
+      rustflags += [
+        "-Clink-arg=-Wl,--whole-archive",
+        "-Clink-arg=${_start_lib}",
+        "-Clink-arg=-Wl,--no-whole-archive",
+      ]
+      deps += [ _start_object ]
+    }
+  }
+
+  _out_dir = get_label_info(":${_name}", "root_out_dir")
+  _elf = "${_out_dir}/bin/${_name}"
+
+  action("${_name}_check") {
+    forward_variables_from(invoker, [ "testonly" ])
+    script = "//build/scripts/check_blueos_elf.py"
+    inputs = [ _elf ]
+    deps = [ ":${_name}" ]
+    args = [
+      "--profile",
+      "dynamic_app",
+      "--target-profile",
+      dynamic_elf_profile,
+      "--stamp",
+      rebase_path("${target_gen_dir}/${_name}_check.stamp"),
+      rebase_path(_elf),
+    ]
+    outputs = [ "${target_gen_dir}/${_name}_check.stamp" ]
+  }
+}

@@ -48,6 +48,13 @@ if (current_toolchain == default_toolchain) {
   pool("console") {
     depth = 1
   }
+
+  # QEMU checks are CPU-heavy TCG processes. Letting every check_all action
+  # consume Ninja's default pool can oversubscribe the host badly enough for
+  # the line-oriented checker to report a false inactivity timeout.
+  pool("qemu") {
+    depth = 2
+  }
 }
 
 group("run_gnrt") {
