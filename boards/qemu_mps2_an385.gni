@@ -20,6 +20,11 @@ rust_abi_target = "thumbv7m-none-eabi"
 qemu_extra_args = []
 qemu_net_args = []
 qemu_block_args = []
+
+dynamic_elf_profile = "thumbv7m-vivo-blueos-newlibeabi"
+dynamic_loader = true
+boot_dynamic_seed = true
+
 board_deps = [
   "//build/boards/${board}:default_linker_script",
   "//external/vendor/cortex-m-0.7.7:cortex_m",
