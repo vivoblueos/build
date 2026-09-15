@@ -16,9 +16,9 @@ import("//build/default_targets.gni")
 import("//build/templates/board.gni")
 import("//build/templates/linker_script.gni")
 
-_sysroot = exec_script("//build/scripts/get_sysroot.py",
-                       [ "arm-none-eabi-gcc" ],
-                       "string")
+_target_linker = "arm-none-eabi-gcc"
+_sysroot =
+    exec_script("//build/scripts/get_sysroot.py", [ _target_linker ], "string")
 
 generate_linker_script("default_linker_script") {
   preprocessor = "arm-none-eabi-cpp"
@@ -57,7 +57,7 @@ blueos_board("qemu_mps2_an385") {
       "armv7m",
       "-Zemit-stack-sizes",
       "-Crelocation-model=static",
-      "-Clinker=arm-none-eabi-gcc",
+      "-Clinker=${_target_linker}",
     ]
     foreach(item, ldflags) {
       rustflags += [ "-Clink-arg=${item}" ]
@@ -71,6 +71,34 @@ blueos_board("qemu_mps2_an385") {
       "-Clink-arg=-Wl,-z,norelro",
     ]
   }
+  dynamic_config = {
+    cflags = [
+      "-mthumb",
+      "-march=armv7e-m",
+      "-mcpu=cortex-m3",
+      "-ffreestanding",
+      "-fshort-enums",
+      "-fsigned-char",
+    ]
+    ldflags = [
+      "-mthumb",
+      "-march=armv7e-m",
+      "-mcpu=cortex-m3",
+
+      # GNU ld's short Thumb PLT produces an invalid first .rel.plt offset.
+      # The long form is required by the loader's relocation contract.
+      "-Wl,--long-plt",
+    ]
+    rustflags = [
+      "-Crelocation-model=pic",
+      "-Cpanic=abort",
+      "-Clinker=${_target_linker}",
+      "-Clinker-flavor=gcc",
+    ]
+    foreach(item, ldflags) {
+      rustflags += [ "-Clink-arg=${item}" ]
+    }
+  }
   default = [
     "//apps/example:check_apps",
     "//apps/shell:shell_runner",
@@ -78,4 +106,5 @@ blueos_board("qemu_mps2_an385") {
   check_all = default + check_all_on_virtual_board + clippy_all_on_virtual_board
   check_all += [ "//kernel/adapter/cmsis:run_adapter_validation" ]
   check_all += [ "//kernel/adapter/thread_metric:run_tests" ]
+  check_all += [ "//kernel/tests:check_dynamic" ]
 }

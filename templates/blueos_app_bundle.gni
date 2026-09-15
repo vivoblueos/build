@@ -1,0 +1,132 @@
+# Copyright (c) 2026 vivo Mobile Communication Co., Ltd.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#       http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+import("//build/templates/blueos_dso.gni")
+import("//build/templates/dynamic_app.gni")
+
+# Build a dynamic application and the private DSOs installed beside it.
+#
+# This is a filesystem bundle only. Runtime dependency discovery comes from
+# each ELF's DT_NEEDED entries; the generated layout merely tells a firmware
+# image which build artifacts to copy to which VFS paths during boot seeding.
+#
+# Invoker contract:
+# root_path          VFS path of the root ELF
+# root_sources       root crate sources
+# root_depends       private DSO target names linked by the root
+# private_dsos       scopes containing name, vfs_path, sources, depends,
+# optional soname/omit_soname and optional rustflags
+# extra_root_deps    optional additional build dependencies
+# root_rustflags     optional additional root link flags
+template("blueos_app_bundle") {
+  assert(defined(invoker.root_sources), "root_sources required")
+  assert(defined(invoker.root_path), "root_path required")
+  assert(defined(invoker.root_depends), "root_depends required")
+
+  _name = target_name
+  _lib_dir = rebase_path("${root_out_dir}/lib")
+  _private_dsos = []
+  if (defined(invoker.private_dsos)) {
+    _private_dsos = invoker.private_dsos
+  }
+
+  foreach(_dso, _private_dsos) {
+    blueos_dso(_dso.name) {
+      crate_name = _dso.name
+      if (defined(_dso.soname)) {
+        soname = _dso.soname
+      }
+      if (defined(_dso.omit_soname)) {
+        omit_soname = _dso.omit_soname
+      }
+      sources = _dso.sources
+      deps = [ "//librs:libc" ]
+      rustflags = [
+        "-Clink-arg=-L${_lib_dir}",
+        "-Clink-arg=-l:liblibrs.so",
+      ]
+      foreach(_dep, _dso.depends) {
+        rustflags += [ "-Clink-arg=-l:lib${_dep}.so" ]
+        deps += [ ":${_dep}" ]
+      }
+      if (defined(_dso.rustflags)) {
+        rustflags += _dso.rustflags
+      }
+    }
+  }
+
+  dynamic_app("${_name}_root") {
+    sources = invoker.root_sources
+    start_object = "//librs:blueos_scrt1"
+    deps = [
+      "//librs:blueos_scrt1",
+      "//librs:libc",
+    ]
+    foreach(_dso, _private_dsos) {
+      deps += [ ":${_dso.name}" ]
+    }
+    if (defined(invoker.extra_root_deps)) {
+      deps += invoker.extra_root_deps
+    }
+    rustflags = [
+      "-Clink-arg=-L${_lib_dir}",
+      "-Clink-arg=-l:liblibrs.so",
+      "-Clink-arg=-Wl,--export-dynamic-symbol=main",
+    ]
+    foreach(_dep, invoker.root_depends) {
+      rustflags += [ "-Clink-arg=-l:lib${_dep}.so" ]
+    }
+    if (defined(invoker.root_rustflags)) {
+      rustflags += invoker.root_rustflags
+    }
+  }
+
+  _root_elf = "${root_out_dir}/bin/${_name}_root"
+  _layout = "${target_gen_dir}/${_name}_layout.json"
+  _layout_args = [
+    "--root",
+    invoker.root_path + "," + rebase_path(_root_elf),
+    "--out",
+    rebase_path(_layout),
+  ]
+  foreach(_dso, _private_dsos) {
+    _layout_args += [
+      "--file",
+      _dso.vfs_path + "," +
+          rebase_path("${root_out_dir}/lib/lib${_dso.name}.so"),
+    ]
+  }
+
+  action("${_name}_layout") {
+    script = "//build/scripts/gen_blueos_app_layout.py"
+    deps = [
+      ":${_name}_root",
+      ":${_name}_root_check",
+    ]
+    inputs = [ _root_elf ]
+    foreach(_dso, _private_dsos) {
+      deps += [
+        ":${_dso.name}",
+        ":${_dso.name}_check",
+      ]
+      inputs += [ "${root_out_dir}/lib/lib${_dso.name}.so" ]
+    }
+    args = _layout_args
+    outputs = [ _layout ]
+  }
+
+  group(_name) {
+    deps = [ ":${_name}_layout" ]
+  }
+}

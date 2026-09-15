@@ -30,6 +30,12 @@ template("blueos_board") {
     forward_variables_from(invoker.app_config, "*")
   }
 
+  if (defined(invoker.dynamic_config)) {
+    config("dynamic_config") {
+      forward_variables_from(invoker.dynamic_config, "*")
+    }
+  }
+
   group("default") {
     deps = invoker.default
   }
