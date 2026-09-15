@@ -1,0 +1,134 @@
+# Copyright (c) 2026 vivo Mobile Communication Co., Ltd.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#       http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+import("//build/boards/${board}.gni")
+
+# Build one freestanding C/C++ dynamic artifact with the board's ordinary GN
+# toolchain, then run the same ELF contract gate used by Rust artifacts. This
+# deliberately uses executable/shared_library instead of a Python compiler
+# driver, so compiler and linker selection stays owned by the toolchain.
+#
+# Required invoker variables:
+# kind       "pie" or "dso"
+# sources    C/C++ source files
+# libraries  already-built DSO paths passed directly to the linker
+# deps       GN targets producing libraries/start_object
+#
+# PIE additionally requires start_object. DSOs use the conventional
+# `lib<target>.so.1` output and SONAME.
+template("blueos_clang_dynamic_artifact") {
+  assert(
+      defined(invoker.kind) && (invoker.kind == "pie" || invoker.kind == "dso"),
+      "kind must be `pie` or `dso`")
+  assert(defined(invoker.sources) && invoker.sources != [],
+         "sources are required")
+  assert(defined(invoker.libraries), "libraries are required")
+  assert(defined(invoker.deps), "deps are required")
+  assert(invoker.kind != "pie" || defined(invoker.start_object),
+         "PIE requires start_object")
+
+  _name = target_name
+  _kind = invoker.kind
+  _sources = invoker.sources
+  _libraries = invoker.libraries
+  _deps = invoker.deps
+  if (_kind == "pie") {
+    _start_object = invoker.start_object
+  }
+  _ldflags = [
+    "-nostdlib",
+    "-nostartfiles",
+    "-nodefaultlibs",
+    "-Wl,--gc-sections",
+    "-Wl,--no-undefined",
+    "-Wl,--no-as-needed",
+    "-Wl,-Bdynamic",
+    "-Wl,--hash-style=both",
+    "-Wl,--build-id=sha1",
+    "-Wl,-z,now",
+    "-Wl,-z,noexecstack",
+    "-Wl,-z,max-page-size=4096",
+  ]
+  _cflags = [
+    "-Wall",
+    "-Wextra",
+    "-Werror",
+  ]
+  _cflags_cc = [
+    "-std=c++17",
+    "-fno-exceptions",
+    "-fno-rtti",
+    "-fno-threadsafe-statics",
+    "-fno-use-cxa-atexit",
+  ]
+
+  if (_kind == "pie") {
+    _cflags += [ "-fPIE" ]
+    _ldflags += [
+      "-Wl,-pie",
+      "-Wl,--no-dynamic-linker",
+      "-Wl,-e,_start",
+      "-Wl,--whole-archive",
+      rebase_path(_start_object, root_build_dir),
+      "-Wl,--no-whole-archive",
+    ]
+    executable(_name) {
+      forward_variables_from(invoker, [ "testonly" ])
+      sources = _sources
+      data_deps = _deps
+      configs += [ "//build/boards/${board}:dynamic_config" ]
+      cflags = _cflags
+      cflags_cc = _cflags_cc
+      ldflags = _ldflags
+      libs = _libraries
+    }
+  } else {
+    _cflags += [ "-fPIC" ]
+    shared_library(_name) {
+      forward_variables_from(invoker, [ "testonly" ])
+      sources = _sources
+      data_deps = _deps
+      configs += [ "//build/boards/${board}:dynamic_config" ]
+      cflags = _cflags
+      cflags_cc = _cflags_cc
+      ldflags = _ldflags
+      libs = _libraries
+      output_extension = "so.1"
+    }
+  }
+
+  _profile = "dso"
+  _out_dir = get_label_info(":${_name}", "root_out_dir")
+  _output = "${_out_dir}/lib/lib${_name}.so.1"
+  if (_kind == "pie") {
+    _profile = "dynamic_app"
+    _output = "${_out_dir}/bin/${_name}"
+  }
+  action("${_name}_check") {
+    forward_variables_from(invoker, [ "testonly" ])
+    script = "//build/scripts/check_blueos_elf.py"
+    inputs = [ _output ]
+    deps = [ ":${_name}" ]
+    args = [
+      "--profile",
+      _profile,
+      "--target-profile",
+      dynamic_elf_profile,
+      "--stamp",
+      rebase_path("${target_gen_dir}/${_name}_check.stamp", root_build_dir),
+      rebase_path(_output, root_build_dir),
+    ]
+    outputs = [ "${target_gen_dir}/${_name}_check.stamp" ]
+  }
+}

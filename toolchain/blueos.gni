@@ -294,6 +294,7 @@ template("run_qemu_check") {
   }
   action(qemu_action_name) {
     script = "//build/scripts/qemu_checker/qemu_checker.py"
+    pool = "//:qemu($default_toolchain)"
     args = [
       "-s",
       runner_path,
@@ -376,8 +377,8 @@ template("blueos_toolchain") {
       clippy_command = "{{rustenv}} ${clippy_driver} --crate-name {{crate_name}} --crate-type {{crate_type}} {{rustflags}} ${clippy_lint_flags} {{source}} {{externs}} {{rustdeps}} -o ${outfile}.clippy"
 
       # Use echo '...' here so that we can keep escape chars, i.e., keep the
-      # verbatim clippy_command. Then we can just use the shell to run the `*.clippy_rsp`
-      # file.
+      # verbatim clippy_command. Then we can just use the shell to run the
+      # `*.clippy_rsp` file.
       gen_clippy_rspfile_command =
           " && echo '${clippy_command}' > ${clippy_rspfile}"
 
