@@ -17,12 +17,13 @@ import("//build/templates/rust.gni")
 
 # Build a PIC/PIE dynamic application (ET_DYN) and gate its ELF contract.
 #
-# The image is relocated by the kernel loader against a `libc.so.1` dependency:
-# it must carry PT_DYNAMIC + DT_NEEDED, must be PIE (DF_1_PIE), and must not
-# carry PT_INTERP or be linked static (see `check_blueos_elf.py`). RELRO is
-# optional because the board's bare-metal GNU ld emulation does not emit it.
-# The caller supplies the `libc.so.1` import through `deps`/`rustflags` and the
-# `blueos_scrt1` start object through `start_object`.
+# The image is relocated by the kernel loader. It must carry PT_DYNAMIC, must
+# be PIE (DF_1_PIE), and must not carry PT_INTERP or be linked static (see
+# `check_blueos_elf.py`). DT_NEEDED is optional: a self-contained PIE has no
+# shared-library dependency, while a dynamically linked PIE may carry one or
+# more entries. RELRO is optional because the board's bare-metal GNU ld
+# emulation does not emit it. A caller that needs `libc.so.1` supplies the
+# import through `deps`/`rustflags`; `start_object` supplies `blueos_scrt1`.
 #
 # `start_object` is a GN static_library target (//librs:blueos_scrt1); its .a
 # is linked whole and first so `_start` becomes the PIE entry.
