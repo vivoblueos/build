@@ -1,0 +1,55 @@
+# Copyright (c) 2026 vivo Mobile Communication Co., Ltd.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#       http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# GN template wrapping the DTS -> .rs module generator (Phase 2).
+# Phase 1 rustflags are handled via inline exec_script in the board's BUILD.gn.
+
+# Cache binding file list at parse time (runs once per gn gen, not per invocation).
+_dts_binding_files = exec_script("//build/scripts/list_files.py",
+                                  [ rebase_path("//build/dts/bindings") ],
+                                  "list lines")
+
+template("dts_gen") {
+  assert(defined(invoker.dts_file),
+         "dts_file must be defined for dts_gen")
+
+  _dts_file = invoker.dts_file
+  _dts_dir = "//build/dts"
+  _out_dir = "${root_gen_dir}/dts"
+
+  action(target_name) {
+    script = "//build/scripts/dts_gen.py"
+
+    # GN cannot know the exact output file list until dtc runs, so we
+    # declare mod.rs as a stamp output and declare the action as
+    # non-cleanable so that all outputs survive.
+    outputs = [
+      "${_out_dir}/mod.rs",
+    ]
+
+    args = [
+      "--dts",
+      rebase_path(_dts_file),
+      "--dts-dir",
+      rebase_path(_dts_dir),
+      "--out-dir",
+      rebase_path(_out_dir),
+    ]
+
+    # DTS file and binding files as implicit inputs.
+    inputs = [
+      _dts_file,
+    ] + _dts_binding_files
+  }
+}
