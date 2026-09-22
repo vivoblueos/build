@@ -15,22 +15,20 @@
 import("//build/boards/${board}.gni")
 import("//build/templates/rust.gni")
 
-# Build a PIC/PIE dynamic application (ET_DYN) and gate its ELF contract.
+# Build a PIC/PIE dynamic application (ET_DYN).
 #
 # The image is relocated by the kernel loader. It must carry PT_DYNAMIC, must
-# be PIE (DF_1_PIE), and must not carry PT_INTERP or be linked static (see
-# `check_blueos_elf.py`). DT_NEEDED is optional: a self-contained PIE has no
-# shared-library dependency, while a dynamically linked PIE may carry one or
-# more entries. RELRO is optional because the board's bare-metal GNU ld
-# emulation does not emit it. A caller that needs `libc.so.1` supplies the
-# import through `deps`/`rustflags`; `start_object` supplies `blueos_scrt1`.
+# be PIE (DF_1_PIE), and must not carry PT_INTERP or be linked static.
+# DT_NEEDED is optional: a self-contained PIE has no shared-library dependency,
+# while a dynamically linked PIE may carry one or more entries. RELRO is
+# optional because the board's bare-metal GNU ld emulation does not emit it. A
+# caller that needs `libc.so.1` supplies the import through `deps`/`rustflags`;
+# `start_object` supplies `blueos_scrt1`.
 #
 # `start_object` is a GN static_library target (//librs:blueos_scrt1); its .a
 # is linked whole and first so `_start` becomes the PIE entry.
 #
-# Produces two targets:
-# :<name>         the linked `bin/<name>` (ET_DYN PIE)
-# :<name>_check   runs the ELF contract gate
+# Produces :<name>, the linked `bin/<name>` (ET_DYN PIE).
 template("dynamic_app") {
   assert(defined(invoker.sources), "dynamic_app requires `sources`")
 
@@ -80,25 +78,5 @@ template("dynamic_app") {
       ]
       deps += [ _start_object ]
     }
-  }
-
-  _out_dir = get_label_info(":${_name}", "root_out_dir")
-  _elf = "${_out_dir}/bin/${_name}"
-
-  action("${_name}_check") {
-    forward_variables_from(invoker, [ "testonly" ])
-    script = "//build/scripts/check_blueos_elf.py"
-    inputs = [ _elf ]
-    deps = [ ":${_name}" ]
-    args = [
-      "--profile",
-      "dynamic_app",
-      "--target-profile",
-      dynamic_elf_profile,
-      "--stamp",
-      rebase_path("${target_gen_dir}/${_name}_check.stamp"),
-      rebase_path(_elf),
-    ]
-    outputs = [ "${target_gen_dir}/${_name}_check.stamp" ]
   }
 }

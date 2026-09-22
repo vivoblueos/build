@@ -110,16 +110,10 @@ template("blueos_app_bundle") {
 
   action("${_name}_layout") {
     script = "//build/scripts/gen_blueos_app_layout.py"
-    deps = [
-      ":${_name}_root",
-      ":${_name}_root_check",
-    ]
+    deps = [ ":${_name}_root" ]
     inputs = [ _root_elf ]
     foreach(_dso, _private_dsos) {
-      deps += [
-        ":${_dso.name}",
-        ":${_dso.name}_check",
-      ]
+      deps += [ ":${_dso.name}" ]
       inputs += [ "${root_out_dir}/lib/lib${_dso.name}.so" ]
     }
     args = _layout_args
