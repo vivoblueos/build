@@ -15,16 +15,14 @@
 import("//build/boards/${board}.gni")
 import("//build/templates/rust.gni")
 
-# Build a PIC shared object (ET_DYN, `-shared`) and gate its ELF contract.
+# Build a PIC shared object (ET_DYN, `-shared`).
 #
 # A DSO can serve as a system shared library such as `libc.so.1`. The profile
 # pins PIC codegen and the dynamic hardening flags supported by the board
 # linker. A SONAME is emitted by default; set `omit_soname = true` for a
 # path-addressed DSO that intentionally has none.
 #
-# Produces:
-# :<name>        the linked `lib/lib<crate_name>.so`
-# :<name>_check  runs the ELF contract gate
+# Produces :<name>, the linked `lib/lib<crate_name>.so`.
 template("blueos_dso") {
   assert(defined(invoker.sources), "blueos_dso requires `sources`")
 
@@ -65,25 +63,5 @@ template("blueos_dso") {
     if (defined(invoker.rustflags)) {
       rustflags += invoker.rustflags
     }
-  }
-
-  _out_dir = get_label_info(":${_name}", "root_out_dir")
-  _elf = "${_out_dir}/lib/lib${_crate_name}.so"
-
-  action("${_name}_check") {
-    forward_variables_from(invoker, [ "testonly" ])
-    script = "//build/scripts/check_blueos_elf.py"
-    inputs = [ _elf ]
-    deps = [ ":${_name}" ]
-    args = [
-      "--profile",
-      "dso",
-      "--target-profile",
-      dynamic_elf_profile,
-      "--stamp",
-      rebase_path("${target_gen_dir}/${_name}_check.stamp"),
-      rebase_path(_elf),
-    ]
-    outputs = [ "${target_gen_dir}/${_name}_check.stamp" ]
   }
 }

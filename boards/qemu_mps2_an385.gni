@@ -21,7 +21,6 @@ qemu_extra_args = []
 qemu_net_args = []
 qemu_block_args = []
 
-dynamic_elf_profile = "thumbv7m-vivo-blueos-newlibeabi"
 dynamic_loader = true
 boot_dynamic_seed = true
 

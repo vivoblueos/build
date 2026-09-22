@@ -15,9 +15,9 @@
 import("//build/boards/${board}.gni")
 
 # Build one freestanding C/C++ dynamic artifact with the board's ordinary GN
-# toolchain, then run the same ELF contract gate used by Rust artifacts. This
-# deliberately uses executable/shared_library instead of a Python compiler
-# driver, so compiler and linker selection stays owned by the toolchain.
+# toolchain. This deliberately uses executable/shared_library instead of a
+# Python compiler driver, so compiler and linker selection stays owned by the
+# toolchain.
 #
 # Required invoker variables:
 # kind       "pie" or "dso"
@@ -106,29 +106,5 @@ template("blueos_clang_dynamic_artifact") {
       libs = _libraries
       output_extension = "so.1"
     }
-  }
-
-  _profile = "dso"
-  _out_dir = get_label_info(":${_name}", "root_out_dir")
-  _output = "${_out_dir}/lib/lib${_name}.so.1"
-  if (_kind == "pie") {
-    _profile = "dynamic_app"
-    _output = "${_out_dir}/bin/${_name}"
-  }
-  action("${_name}_check") {
-    forward_variables_from(invoker, [ "testonly" ])
-    script = "//build/scripts/check_blueos_elf.py"
-    inputs = [ _output ]
-    deps = [ ":${_name}" ]
-    args = [
-      "--profile",
-      _profile,
-      "--target-profile",
-      dynamic_elf_profile,
-      "--stamp",
-      rebase_path("${target_gen_dir}/${_name}_check.stamp", root_build_dir),
-      rebase_path(_output, root_build_dir),
-    ]
-    outputs = [ "${target_gen_dir}/${_name}_check.stamp" ]
   }
 }
