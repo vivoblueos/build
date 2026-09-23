@@ -1,0 +1,82 @@
+# Copyright (c) 2026 vivo Mobile Communication Co., Ltd.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#       http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+import("//build/boards/${board}.gni")
+import("//build/templates/rust.gni")
+
+# Build a PIC/PIE dynamic application (ET_DYN).
+#
+# The image is relocated by the kernel loader. It must carry PT_DYNAMIC, must
+# be PIE (DF_1_PIE), and must not carry PT_INTERP or be linked static.
+# DT_NEEDED is optional: a self-contained PIE has no shared-library dependency,
+# while a dynamically linked PIE may carry one or more entries. RELRO is
+# optional because the board's bare-metal GNU ld emulation does not emit it. A
+# caller that needs `libc.so.1` supplies the import through `deps`/`rustflags`;
+# `start_object` supplies `blueos_scrt1`.
+#
+# `start_object` is a GN static_library target (//librs:blueos_scrt1); its .a
+# is linked whole and first so `_start` becomes the PIE entry.
+#
+# Produces :<name>, the linked `bin/<name>` (ET_DYN PIE).
+template("dynamic_app") {
+  assert(defined(invoker.sources), "dynamic_app requires `sources`")
+
+  _name = target_name
+  build_rust(_name) {
+    forward_variables_from(invoker,
+                           "*",
+                           [
+                             "rustflags",
+                             "deps",
+                             "start_object",
+                           ])
+    crate_type = "bin"
+    configs += [ "//build/boards/${board}:dynamic_config" ]
+
+    # A dynamic application brings its own `blueos_scrt1` start object; the
+    # toolchain crt0 must never be linked in.
+    rustflags = [
+      "-Clink-arg=-nostartfiles",
+      "-Clink-arg=-Wl,-pie",
+      "-Clink-arg=-Wl,--no-dynamic-linker",
+      "-Clink-arg=-Wl,-z,now",
+      "-Clink-arg=-Wl,-z,noexecstack",
+      "-Clink-arg=-Wl,-z,max-page-size=4096",
+      "-Clink-arg=-Wl,--build-id",
+    ]
+    if (defined(invoker.rustflags)) {
+      rustflags += invoker.rustflags
+    }
+    deps = []
+    if (defined(invoker.deps)) {
+      deps += invoker.deps
+    }
+    if (defined(invoker.start_object)) {
+      # Link the start object whole and first: an archive only pulls members
+      # that resolve an undefined symbol, and `_start` has no referrer, so
+      # without `--whole-archive` the entry would vanish and the link would
+      # fail with an undefined `_start`.
+      _start_object = invoker.start_object
+      _start_out_dir = get_label_info(_start_object, "root_out_dir")
+      _start_name = get_label_info(_start_object, "name")
+      _start_lib = rebase_path("${_start_out_dir}/lib/lib${_start_name}.a")
+      rustflags += [
+        "-Clink-arg=-Wl,--whole-archive",
+        "-Clink-arg=${_start_lib}",
+        "-Clink-arg=-Wl,--no-whole-archive",
+      ]
+      deps += [ _start_object ]
+    }
+  }
+}
