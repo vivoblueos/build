@@ -37,7 +37,9 @@ class CheckerTests(unittest.TestCase):
             checker.add_assert_succ(re.compile(r'^Done kernel unittests$'))
             checker.add_assert_fail(re.compile(r'^Oops:'))
             output = io.StringIO()
-            with contextlib.redirect_stdout(output):
+            # Expected guest failures are test data, so capture their logs too.
+            with self.assertLogs('qemu_checker', level='INFO'), \
+                    contextlib.redirect_stdout(output):
                 result = checker.run_and_check()
             return result, output.getvalue(), checker.fail_lines
 
@@ -87,7 +89,11 @@ time.sleep(60)
 
 if __name__ == '__main__':
     suite = unittest.defaultTestLoader.loadTestsFromTestCase(CheckerTests)
-    result = unittest.TextTestRunner(verbosity=2).run(suite)
+    output = io.StringIO()
+    result = unittest.TextTestRunner(stream=output, verbosity=2).run(suite)
+    # GN checks are silent on success; manual runs still show the test report.
+    if len(sys.argv) == 1 or not result.wasSuccessful():
+        sys.stderr.write(output.getvalue())
     if not result.wasSuccessful():
         sys.exit(1)
     if len(sys.argv) > 1:
