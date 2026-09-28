@@ -21,6 +21,7 @@ qemu_extra_args = []
 qemu_net_args = []
 qemu_block_args = []
 board_deps = [
+  "//external/vendor/aarch64-cpu-11.2.0:aarch64_cpu",
   "//external/vendor/arm-gic-0.4.0:arm_gic",
   "//external/vendor/flat_device_tree-3.1.1:flat_device_tree",
   "//external/vendor/smoltcp-0.12.0:smoltcp",
