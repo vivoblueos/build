@@ -49,10 +49,30 @@ blueos_board("qemu_virt64_aarch64") {
     ]
   }
 
+  dynamic_config = {
+    cflags = [
+      "-mcpu=cortex-a53",
+      "-ffreestanding",
+    ]
+    ldflags = [ "-mcpu=cortex-a53" ]
+    rustflags = [
+      "-Crelocation-model=pic",
+      "-Cpanic=abort",
+      "-Clinker=aarch64-none-elf-gcc",
+      "-Clinker-flavor=gcc",
+    ]
+    foreach(item, ldflags) {
+      rustflags += [ "-Clink-arg=${item}" ]
+    }
+  }
+
   default = [
     "//apps/example:check_apps",
     "//apps/shell:shell_runner",
   ]
   _check_all = check_all_on_virtual_board + clippy_all_on_virtual_board
   check_all = default + filter_exclude(_check_all, [ "//kernel/adapter*" ])
+  if (!coverage && !profile) {
+    check_all += [ "//kernel/tests:check_dynamic" ]
+  }
 }

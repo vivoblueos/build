@@ -17,6 +17,8 @@ default_linker_script = "${root_gen_dir}/link.pre.ld"
 qemu_exe = "qemu-system-aarch64"
 qemu_machine = "virt,virtualization=on,gic-version=3"
 rust_abi_target = "aarch64-unknown-none"
+dynamic_loader = true
+boot_dynamic_seed = true
 qemu_extra_args = [
   "-cpu",
   "cortex-a53",
