@@ -16,9 +16,9 @@ import("//build/default_targets.gni")
 import("//build/templates/board.gni")
 import("//build/templates/linker_script.gni")
 
-_sysroot = exec_script("//build/scripts/get_sysroot.py",
-                       [ "arm-none-eabi-cpp" ],
-                       "string")
+_target_linker = "arm-none-eabi-gcc"
+_sysroot =
+    exec_script("//build/scripts/get_sysroot.py", [ _target_linker ], "string")
 
 generate_linker_script("default_linker_script") {
   preprocessor = "arm-none-eabi-gcc"
@@ -65,7 +65,7 @@ blueos_board("qemu_mps3_an547") {
       "has_fpu",
       "-Zemit-stack-sizes",
       "-Crelocation-model=static",
-      "-Clinker=arm-none-eabi-gcc",
+      "-Clinker=${_target_linker}",
     ]
     foreach(item, ldflags) {
       rustflags += [ "-Clink-arg=${item}" ]
@@ -79,14 +79,44 @@ blueos_board("qemu_mps3_an547") {
       "-Clink-arg=-Wl,-z,norelro",
     ]
   }
+  dynamic_config = {
+    cflags = [
+      "-mthumb",
+      "-mcpu=cortex-m55",
+      "-march=armv8.1-m.main+mve.fp+fp.dp",
+      "-mfpu=fpv5-d16",
+      "-mfloat-abi=hard",
+      "-ffreestanding",
+      "-fshort-enums",
+      "-fsigned-char",
+    ]
+    ldflags = [
+      "-mthumb",
+      "-mcpu=cortex-m55",
+      "-march=armv8.1-m.main+mve.fp+fp.dp",
+      "-mfpu=fpv5-d16",
+      "-mfloat-abi=hard",
+
+      # GNU ld's long Thumb PLT keeps .rel.plt offsets valid for the loader.
+      "-Wl,--long-plt",
+    ]
+    rustflags = [
+      "-Crelocation-model=pic",
+      "-Cpanic=abort",
+      "-Clinker=${_target_linker}",
+      "-Clinker-flavor=gcc",
+    ]
+    foreach(item, ldflags) {
+      rustflags += [ "-Clink-arg=${item}" ]
+    }
+  }
   default = [
     "//apps/example:check_apps",
     "//apps/shell:shell_runner",
   ]
   check_all = check_all_on_virtual_board + clippy_all_on_virtual_board +
               [ "//apps/example:check_apps" ]
-
-  # FIXME: Enable thread_metric on this board. Currently, VFS is disabled on
-  # this board, so that `printf` in libc is unavailable.  However, thread_metric
-  # requires `printf`.
+  if (!coverage && !profile) {
+    check_all += [ "//kernel/tests:check_dynamic" ]
+  }
 }

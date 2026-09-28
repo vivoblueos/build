@@ -51,14 +51,17 @@ template("blueos_app_bundle") {
         omit_soname = _dso.omit_soname
       }
       sources = _dso.sources
-      deps = [ "//librs:libc" ]
+
+      # These are C ABI imports linked by the explicit flags below. Keeping
+      # them as data dependencies avoids passing each DSO to rustc twice.
+      data_deps = [ "//librs:libc" ]
       rustflags = [
         "-Clink-arg=-L${_lib_dir}",
         "-Clink-arg=-l:liblibrs.so",
       ]
       foreach(_dep, _dso.depends) {
         rustflags += [ "-Clink-arg=-l:lib${_dep}.so" ]
-        deps += [ ":${_dep}" ]
+        data_deps += [ ":${_dep}" ]
       }
       if (defined(_dso.rustflags)) {
         rustflags += _dso.rustflags
@@ -69,20 +72,22 @@ template("blueos_app_bundle") {
   dynamic_app("${_name}_root") {
     sources = invoker.root_sources
     start_object = "//librs:blueos_scrt1"
-    deps = [
-      "//librs:blueos_scrt1",
-      "//librs:libc",
-    ]
+    deps = [ "//librs:blueos_scrt1" ]
+    data_deps = [ "//librs:libc" ]
     foreach(_dso, _private_dsos) {
-      deps += [ ":${_dso.name}" ]
+      data_deps += [ ":${_dso.name}" ]
     }
     if (defined(invoker.extra_root_deps)) {
-      deps += invoker.extra_root_deps
+      data_deps += invoker.extra_root_deps
     }
     rustflags = [
       "-Clink-arg=-L${_lib_dir}",
       "-Clink-arg=-l:liblibrs.so",
       "-Clink-arg=-Wl,--export-dynamic-symbol=main",
+
+      # Private DSOs name their dependencies by installed SONAME. The loader
+      # resolves that closure and validates its symbols at runtime.
+      "-Clink-arg=-Wl,--allow-shlib-undefined",
     ]
     foreach(_dep, invoker.root_depends) {
       rustflags += [ "-Clink-arg=-l:lib${_dep}.so" ]

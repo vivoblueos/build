@@ -55,9 +55,6 @@ template("dynamic_app") {
       "-Clink-arg=-Wl,-z,max-page-size=4096",
       "-Clink-arg=-Wl,--build-id",
     ]
-    if (defined(invoker.rustflags)) {
-      rustflags += invoker.rustflags
-    }
     deps = []
     if (defined(invoker.deps)) {
       deps += invoker.deps
@@ -77,6 +74,12 @@ template("dynamic_app") {
         "-Clink-arg=-Wl,--no-whole-archive",
       ]
       deps += [ _start_object ]
+    }
+
+    # The start object's undefined symbols must precede the imported DSOs
+    # when the linker uses --as-needed.
+    if (defined(invoker.rustflags)) {
+      rustflags += invoker.rustflags
     }
   }
 }
