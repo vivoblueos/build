@@ -82,9 +82,19 @@ def download_if_url(value: str, output_dir: str, default_name: str) -> str:
     name = os.path.basename(parsed.path) or default_name
     dest_path = os.path.join(output_dir, name)
     os.makedirs(output_dir, exist_ok=True)
+    # Download to a per-process temp file then atomically replace dest.
+    # Concurrent merge actions share the same dest (same URL basename +
+    # same output_dir); urlretrieve writes dest directly and is NOT atomic,
+    # so a peer can open() a half-written file and merge garbage into the
+    # image. os.replace is an atomic rename on the same filesystem, so
+    # readers only ever see a complete old or complete new file.
+    tmp_path = f"{dest_path}.{os.getpid()}.tmp"
     try:
-        urllib.request.urlretrieve(value, dest_path)
+        urllib.request.urlretrieve(value, tmp_path)
+        os.replace(tmp_path, dest_path)
     except Exception as exc:
+        if os.path.exists(tmp_path):
+            os.remove(tmp_path)
         raise SystemExit(f"Failed to download {value}: {exc}") from exc
     return dest_path
 
