@@ -53,10 +53,10 @@ blueos_board("qemu_riscv32") {
   }
 
   dynamic_config = {
+    # PIC disables small-data addressing. Clang 19 warns on an explicit limit.
     cflags = [
       "-march=rv32imc",
       "-mabi=ilp32",
-      "-msmall-data-limit=0",
       "-ffreestanding",
     ]
     ldflags = [
