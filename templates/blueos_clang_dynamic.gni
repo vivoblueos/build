@@ -95,6 +95,7 @@ template("blueos_clang_dynamic_artifact") {
     }
   } else {
     _cflags += [ "-fPIC" ]
+    _ldflags += [ "-Wl,-shared" ]
     shared_library(_name) {
       forward_variables_from(invoker, [ "testonly" ])
       sources = _sources

@@ -45,8 +45,16 @@ template("blueos_dso") {
                              "soname",
                            ])
     crate_type = "cdylib"
+    if (defined(dynamic_atomic)) {
+      if (!defined(deps)) {
+        deps = []
+      }
+      deps += [ dynamic_atomic ]
+    }
     configs += [ "//build/boards/${board}:dynamic_config" ]
     rustflags = [
+      # Bare-metal Clang drivers ignore -shared; pass it directly to ld.
+      "-Clink-arg=-Wl,-shared",
       "-Clink-arg=-nostartfiles",
       "-Clink-arg=-Wl,-z,now",
       "-Clink-arg=-Wl,-z,noexecstack",

@@ -59,6 +59,9 @@ template("dynamic_app") {
     if (defined(invoker.deps)) {
       deps += invoker.deps
     }
+    if (defined(dynamic_atomic)) {
+      deps += [ dynamic_atomic ]
+    }
     if (defined(invoker.start_object)) {
       # Link the start object whole and first: an archive only pulls members
       # that resolve an undefined symbol, and `_start` has no referrer, so

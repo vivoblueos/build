@@ -23,6 +23,10 @@ blueos_board("qemu_riscv32") {
       "-Wl,-gc-sections",
       "-Wl,-z,norelro",
     ]
+    if (build_type == "debug") {
+      # The boot filesystem retains the full debug ELF files in tmpfs.
+      ldflags += [ "-Wl,--defsym=__blueos_heap_size=0x2000000" ]
+    }
     rustflags = [
       "--cfg",
       "target_board=\"qemu_riscv32\"",
@@ -48,11 +52,35 @@ blueos_board("qemu_riscv32") {
     ]
   }
 
-  default = []
+  dynamic_config = {
+    cflags = [
+      "-march=rv32imc",
+      "-mabi=ilp32",
+      "-msmall-data-limit=0",
+      "-ffreestanding",
+    ]
+    ldflags = [
+      "-fuse-ld=lld",
+      "-march=rv32imc",
+      "-mabi=ilp32",
+      "-Wl,--no-relax",
+    ]
+    rustflags = [
+      "-Crelocation-model=pic",
+      "-Cpanic=abort",
+      "-Clinker=clang",
+      "-Clinker-flavor=gcc",
+      "-Clink-arg=--target=riscv32",
+    ]
+    foreach(item, ldflags) {
+      rustflags += [ "-Clink-arg=${item}" ]
+    }
+  }
+
+  default = [ "//apps/shell:shell_runner" ]
   _check_all = check_all_on_virtual_board + clippy_all_on_virtual_board
-  check_all = filter_exclude(_check_all,
-                             [
-                               "//kernel/adapter*",
-                               "//kernel/loader*",
-                             ])
+  check_all = filter_exclude(_check_all, [ "//kernel/adapter*" ])
+  if (!coverage && !profile) {
+    check_all += [ "//kernel/tests:check_dynamic" ]
+  }
 }
