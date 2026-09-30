@@ -384,15 +384,7 @@ template("blueos_toolchain") {
         clippy_rspfile = "{{target_out_dir}}/{{target_output_name}}.clippy_rsp"
         binfile = "{{output_dir}}/{{target_output_name}}.bin"
 
-<<<<<<< HEAD
         clippy_command = "{{rustenv}} ${clippy_driver} --crate-name {{crate_name}} --crate-type {{crate_type}} {{rustflags}} ${clippy_lint_flags} {{source}} {{externs}} {{rustdeps}} -o ${outfile}.clippy"
-=======
-      # Use echo '...' here so that we can keep escape chars, i.e., keep the
-      # verbatim clippy_command. Then we can just use the shell to run the `*.clippy_rsp`
-      # file.
-      gen_clippy_rspfile_command =
-          " && echo '${clippy_command}' > ${clippy_rspfile}"
->>>>>>> 7886583 (feat: Support Thumbv7-M dynamic applications and shared libraries)
 
         # Use echo '...' here so that we can keep escape chars, i.e., keep the
         # verbatim clippy_command. Then we can just use the shell to run the
