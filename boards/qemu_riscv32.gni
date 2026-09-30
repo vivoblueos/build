@@ -23,6 +23,11 @@ qemu_extra_args = [
 ]
 qemu_net_args = []
 qemu_block_args = []
+
+dynamic_loader = true
+boot_dynamic_seed = true
+dynamic_atomic = "//librs:dynamic_atomic"
+
 board_deps = [
   "//external/vendor/semihosting-0.1.20:semihosting",
   "//external/vendor/smoltcp-0.12.0:smoltcp",

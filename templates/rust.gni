@@ -40,6 +40,7 @@ template("build_rust") {
                            "lib_dirs",
                            "crate_type",
                            "testonly",
+                           "data_deps",
                            "public_deps",
                            "aliased_deps",
                          ],

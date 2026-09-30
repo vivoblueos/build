@@ -1,4 +1,4 @@
-# Copyright (c) 2025 vivo Mobile Communication Co., Ltd.
+# Copyright (c) 2026 vivo Mobile Communication Co., Ltd.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,19 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-group("tests") {
+action("check_qemu_checker") {
   testonly = true
-  deps = [
-    "test_c_dylib:foo",
-    "test_c_exe:foo",
-    "test_c_staticlib:foo",
-    "test_rust_bin_link_cxx_staticlib:foo",
-    "test_rust_bin_link_rlib:foo",
-    "test_rust_cdylib:foo_c",
-    "test_rust_dylib:foo_r",
-    "//build/scripts/qemu_checker:check_qemu_checker",
-
-    # Link rust bin against a rust staticlib is tricky.
-    # We don't show a demo here.
-  ]
+  script = "test_qemu_checker.py"
+  inputs = [ "qemu_checker.py" ]
+  outputs = [ "${target_gen_dir}/${target_name}/dummy" ]
+  args = [ rebase_path(outputs[0], root_build_dir) ]
 }

@@ -37,3 +37,6 @@ if (coverage || profile) {
     "//kernel/rsrt:check_rsrt_by_clippy",
   ]
 }
+
+check_all_on_virtual_board +=
+    [ "//build/scripts/qemu_checker:check_qemu_checker" ]
