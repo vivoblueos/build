@@ -1,0 +1,23 @@
+# build/dts/bindings/vendor/google-goldfish-rtc.yaml
+compatible: "google,goldfish-rtc"
+description: "Google Goldfish RTC controller"
+
+properties:
+  reg:
+    type: array
+    rust:
+      - name: "BASE_ADDRESS"
+        value: "[0].address"
+        ty: "usize"
+      - name: "REG_SIZE"
+        value: "[0].size"
+        ty: "usize"
+  interrupts:
+    type: array
+    rust:
+      - name: "IRQ_NUMBER"
+        value: "[0]"
+        ty: "usize"
+
+cfg-flags:
+  - "dt_has_${compatible_label}"

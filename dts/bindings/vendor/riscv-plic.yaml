@@ -1,0 +1,29 @@
+# build/dts/bindings/vendor/riscv-plic.yaml
+compatible: "riscv,plic0"
+description: "RISC-V Platform Level Interrupt Controller"
+
+properties:
+  reg:
+    type: array
+    rust:
+      - name: "BASE_ADDRESS"
+        value: "[0].address"
+        ty: "usize"
+      - name: "REG_SIZE"
+        value: "[0].size"
+        ty: "usize"
+  riscv,max-priority:
+    type: int
+    rust:
+      - name: "MAX_PRIORITY"
+        value: "."
+        ty: "u32"
+  riscv,ndev:
+    type: int
+    rust:
+      - name: "NUM_SOURCES"
+        value: "."
+        ty: "u32"
+
+cfg-flags:
+  - "dt_has_${compatible_label}"
